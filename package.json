@@ -8,7 +8,6 @@
     "start": "node server.js",
     "server": "node server.js",
     "dev": "node server.js",
-    "build": "echo 'Static build ready'",
     "preview": "node server.js"
   },
   "dependencies": {
