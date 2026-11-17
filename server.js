@@ -1,6 +1,7 @@
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import zlib from 'zlib';
 import { fileURLToPath } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
 
@@ -139,20 +140,33 @@ const server = http.createServer((req, res) => {
 
         const ext = path.extname(filePath).toLowerCase();
         const contentType = MIME[ext] || 'application/octet-stream';
+        const mtime = stats.mtime.toUTCString();
 
-        // Support HTTP Range Requests (essential for audio & video)
+        // 1. Kiểm tra Cache 304 Not Modified để tiết kiệm 100% băng thông khi tải lại
+        if (req.headers['if-modified-since'] === mtime) {
+            res.writeHead(304);
+            res.end();
+            return;
+        }
+
+        // 2. Hỗ trợ HTTP Range Requests cho toàn bộ định dạng âm thanh (.m4a, .mp4, .mp3, .wav, .ogg, .aac)
         const range = req.headers.range;
-        if (range && (ext === '.mp3' || ext === '.wav' || ext === '.ogg')) {
+        const isAudioVideo = (ext === '.m4a' || ext === '.mp4' || ext === '.mp3' || ext === '.wav' || ext === '.ogg' || ext === '.aac');
+        if (range && isAudioVideo) {
             const parts = range.replace(/bytes=/, '').split('-');
             const start = parseInt(parts[0], 10);
-            const end = parts[1] ? parseInt(parts[1], 10) : stats.size - 1;
+            const maxChunk = 512 * 1024; // Stream từng block 512KB để không làm nghẽn băng thông tải ảnh
+            let end = parts[1] ? parseInt(parts[1], 10) : Math.min(start + maxChunk, stats.size - 1);
+            if (end >= stats.size) end = stats.size - 1;
             const chunksize = (end - start) + 1;
 
             res.writeHead(206, {
                 'Content-Range': `bytes ${start}-${end}/${stats.size}`,
                 'Accept-Ranges': 'bytes',
                 'Content-Length': chunksize,
-                'Content-Type': contentType
+                'Content-Type': contentType,
+                'Last-Modified': mtime,
+                'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400'
             });
 
             const stream = fs.createReadStream(filePath, { start, end });
@@ -160,12 +174,37 @@ const server = http.createServer((req, res) => {
             return;
         }
 
-        // Standard 200 response
-        const isCodeOrHtml = ext === '.html' || ext === '.js' || ext === '.css' || ext === '.json';
+        // 3. Phục vụ tài nguyên tĩnh với Nén Gzip & Header Cache tốc độ cao
+        const isCompressible = (ext === '.html' || ext === '.js' || ext === '.mjs' || ext === '.css' || ext === '.json' || ext === '.svg');
+        const acceptEncoding = req.headers['accept-encoding'] || '';
+        const shouldGzip = isCompressible && acceptEncoding.includes('gzip');
+
+        const cacheControl = ext === '.html'
+            ? 'no-cache, must-revalidate'
+            : (isCompressible 
+                ? 'public, max-age=86400, stale-while-revalidate=3600' 
+                : 'public, max-age=604800, stale-while-revalidate=86400');
+
+        if (shouldGzip) {
+            res.writeHead(200, {
+                'Content-Type': contentType,
+                'Content-Encoding': 'gzip',
+                'Last-Modified': mtime,
+                'Cache-Control': cacheControl,
+                'Vary': 'Accept-Encoding'
+            });
+            const rawStream = fs.createReadStream(filePath);
+            const gzipStream = zlib.createGzip({ level: 6 });
+            rawStream.pipe(gzipStream).pipe(res);
+            return;
+        }
+
         res.writeHead(200, {
             'Content-Type': contentType,
             'Content-Length': stats.size,
-            'Cache-Control': isCodeOrHtml ? 'no-cache, no-store, must-revalidate' : 'public, max-age=3600'
+            'Last-Modified': mtime,
+            'Cache-Control': cacheControl,
+            'Accept-Ranges': 'bytes'
         });
 
         const stream = fs.createReadStream(filePath);
@@ -420,29 +459,49 @@ function handleClientMessage(ws, data) {
 
 // Heartbeat ping interval to keep cloud proxies alive (Render, Glitch, Railway, Fly.io, etc.)
 const interval = setInterval(() => {
-    for (const [ws, player] of clients.entries()) {
-        if (!ws.isAlive) {
-            console.log(`[WS] Terminating inactive socket for ${player.name} (${player.id})`);
-            clients.delete(ws);
-            broadcast({
-                type: 'playerLeave',
-                id: player.id,
-                onlineCount: clients.size
-            });
-            ws.terminate();
-            continue;
+    try {
+        for (const [ws, player] of clients.entries()) {
+            if (!ws || ws.readyState === 3 /* CLOSED */) {
+                clients.delete(ws);
+                continue;
+            }
+            if (!ws.isAlive) {
+                const pName = player?.name || 'Unknown';
+                const pId = player?.id || 'unknown';
+                console.log(`[WS] Terminating inactive socket for ${pName} (${pId})`);
+                clients.delete(ws);
+                if (player && player.id) {
+                    broadcast({
+                        type: 'playerLeave',
+                        id: player.id,
+                        onlineCount: clients.size
+                    });
+                }
+                try { ws.terminate(); } catch {}
+                continue;
+            }
+            ws.isAlive = false;
+            try {
+                ws.ping();
+            } catch {
+                try { ws.terminate(); } catch {}
+            }
         }
-        ws.isAlive = false;
-        try {
-            ws.ping();
-        } catch {
-            ws.terminate();
-        }
+    } catch (e) {
+        console.error('[WS Interval Error]', e.message);
     }
 }, 25000);
 
 wss.on('close', () => {
     clearInterval(interval);
+});
+
+// Guard against unhandled crashes
+process.on('uncaughtException', (err) => {
+    console.error('[SERVER ERROR] Uncaught exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[SERVER ERROR] Unhandled rejection at:', promise, 'reason:', reason);
 });
 
 // Start Server

@@ -45,7 +45,7 @@ class SoundSystem {
                 this.bgmAudio = new Audio(this.audioSrc);
                 this.bgmAudio.loop = true;
                 this.bgmAudio.volume = this.isMuted ? 0 : this.bgmVolume;
-                this.bgmAudio.preload = 'auto';
+                this.bgmAudio.preload = 'none'; // Không tải trước audio lúc vừa vào web, dành 100% băng thông tải ảnh & map!
             } catch (e) {
                 console.warn('Lỗi khởi tạo HTML5 Audio:', e);
             }

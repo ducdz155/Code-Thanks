@@ -34,6 +34,12 @@
     <!-- Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
 
+    <!-- Preload Critical Assets (Tải ưu tiên 3 skin khởi đầu & icon quan trọng) -->
+    <link rel="preload" as="image" href="body/skin_shaolin_monk_icon.png">
+    <link rel="preload" as="image" href="body/skin_obocchaman_icon.png">
+    <link rel="preload" as="image" href="body/skin_ethnic_maiden_icon.png">
+    <link rel="preload" as="image" href="assets/ui/icons/sound_normal.png">
+
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -62,6 +68,55 @@
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen select-none">
+
+    <!-- ========================================================
+         MÀN HÌNH LOADING MÀU BE TOÀN CẢNH (FULLSCREEN BEIGE PRELOADER)
+         ======================================================== -->
+    <div id="tnu-global-preloader" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center select-none overflow-hidden" style="background: radial-gradient(circle at 50% 45%, #fffef2 0%, #fbf6d9 50%, #edd8b2 100%); transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s ease;">
+        
+        <!-- Hoa văn trang trí học đường cổ điển -->
+        <div class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(#b89b72_1.5px,transparent_1.5px)] [background-size:24px_24px]"></div>
+
+        <div class="relative z-10 flex flex-col items-center max-w-lg px-6 text-center">
+            <!-- Huy hiệu trường ĐH Tây Nguyên & Cánh đại ngàn Chibi -->
+            <div class="relative mb-5 flex items-center justify-center">
+                <div class="w-24 h-24 rounded-3xl bg-[#fbf6d9] border-3 border-[#5c4731] shadow-2xl flex items-center justify-center p-3 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-amber-200/40 via-transparent to-amber-100/60 pointer-events-none"></div>
+                    <span class="text-5xl drop-shadow transform hover:scale-110 transition-transform">🏛️</span>
+                </div>
+                <!-- Vòng quay tia sáng nhẹ nhàng -->
+                <div class="absolute -inset-2 rounded-full border-2 border-dashed border-[#d4a373] animate-spin-slow pointer-events-none opacity-70"></div>
+            </div>
+
+            <!-- Tên tựa game -->
+            <h1 class="font-quest text-2xl sm:text-3xl font-extrabold text-[#3b2512] tracking-wide mb-1 drop-shadow-sm flex items-center gap-2">
+                <span>TNU: ĐÔI CÁNH ĐẠI NGÀN</span>
+                <span class="text-xl">🪽</span>
+            </h1>
+            <p class="font-sans text-xs sm:text-sm font-semibold text-[#7c6348] mb-6 tracking-wide">
+                Đại Học Tây Nguyên • Chào Mừng Kỷ Niệm 20/11
+            </p>
+
+            <!-- Khung thanh tiến trình màu be viền gỗ quý tộc -->
+            <div class="w-72 sm:w-96 h-5 bg-[#ebd4b0] rounded-full border-2 border-[#5c4731] p-0.5 shadow-inner relative overflow-hidden mb-3">
+                <div id="preloader-bar" class="h-full rounded-full transition-all duration-200 ease-out relative" style="width: 5%; background: linear-gradient(90deg, #f4a261, #e76f51, #e63946, #ffd166); box-shadow: 0 0 10px rgba(230, 57, 70, 0.45);">
+                    <div class="absolute inset-0 bg-white/25 rounded-full preloader-shimmer"></div>
+                </div>
+            </div>
+
+            <!-- Số phần trăm & Dòng trạng thái -->
+            <div class="flex items-center justify-between w-72 sm:w-96 px-1 mb-6 font-quest text-xs font-bold text-[#5c4731]">
+                <span id="preloader-status" class="truncate max-w-[240px]">🌸 Đang kết nối máy chủ TNU...</span>
+                <span id="preloader-percent" class="text-sm font-extrabold text-[#9d0208]">5%</span>
+            </div>
+
+            <!-- Mẹo chơi game ngẫu nhiên -->
+            <div class="px-4 py-2.5 bg-[#fbf6d9]/85 border border-[#b89b72]/60 rounded-xl shadow-md text-[11px] sm:text-xs text-[#604226] font-medium max-w-sm">
+                <span class="font-bold text-[#a03612]">💡 Mẹo nhỏ:</span>
+                <span id="preloader-tip">Ghé Nhà số 7 tìm đồ án tốt nghiệp giúp anh sinh viên CNTT để nhận trang phục đặc quyền!</span>
+            </div>
+        </div>
+    </div>
 
     <div id="game-wrapper" class="relative w-[1280px] h-[720px] bg-slate-950 rounded-2xl overflow-hidden shadow-2xl shadow-black border border-slate-800">
         <!-- Canvas Trò Chơi Chính -->
@@ -1104,9 +1159,141 @@
     <script src="js/game_zone.js?v=20261117_2"></script>
 
     <script>
+        // ========================================================
+        // HỆ THỐNG PRELOADER TẢI TÀI NGUYÊN MÀU BE TOÀN CẢNH
+        // ========================================================
+        const TNUPreloader = {
+            progress: 5,
+            targetProgress: 5,
+            isFinished: false,
+
+            init() {
+                this.bar = document.getElementById('preloader-bar');
+                this.percent = document.getElementById('preloader-percent');
+                this.status = document.getElementById('preloader-status');
+                this.tip = document.getElementById('preloader-tip');
+                this.container = document.getElementById('tnu-global-preloader');
+
+                const tips = [
+                    'Ghé Nhà số 7 tìm đồ án tốt nghiệp giúp anh sinh viên CNTT để nhận trang phục đặc quyền!',
+                    'Thu hoạch hoa hồng và dâng tặng Thầy Cô để đạt 100 điểm thiện cảm mở khóa toàn bộ tủ đồ!',
+                    'Chat "Chúc mừng ngày nhà giáo Việt Nam 20/11" để mở khóa trọn bộ 10 Cánh Thần Thoại!',
+                    'Viết lời tri ân lên Bảng Ước Nguyện để mở khóa Thú Cưng đồng hành!',
+                    'Trải nghiệm 4 minigame tại Khu Vui Chơi để gom nguyên liệu làm Hộp Quà Hoàng Gia!'
+                ];
+                if (this.tip) {
+                    this.tip.innerText = tips[Math.floor(Math.random() * tips.length)];
+                }
+
+                this.animateProgress();
+                this.loadCriticalAssets();
+            },
+
+            setProgress(pct, statusText) {
+                this.targetProgress = Math.max(this.targetProgress, Math.min(100, pct));
+                if (statusText && this.status) {
+                    this.status.innerText = statusText;
+                }
+            },
+
+            animateProgress() {
+                if (this.isFinished) return;
+                if (this.progress < this.targetProgress) {
+                    this.progress += Math.max(0.8, (this.targetProgress - this.progress) * 0.15);
+                    if (this.progress > 99.5) this.progress = 100;
+                }
+
+                const currentVal = Math.floor(this.progress);
+                if (this.bar) this.bar.style.width = `${currentVal}%`;
+                if (this.percent) this.percent.innerText = `${currentVal}%`;
+
+                if (currentVal >= 100 && this.targetProgress >= 100) {
+                    this.finish();
+                    return;
+                }
+
+                requestAnimationFrame(() => this.animateProgress());
+            },
+
+            loadCriticalAssets() {
+                const criticalUrls = [
+                    'assets/map1_campus.jpg',
+                    'body/skin_shaolin_monk_icon.png',
+                    'body/skin_obocchaman_icon.png',
+                    'body/skin_ethnic_maiden_icon.png',
+                    'assets/ui/icons/sound_normal.png',
+                    'assets/ui/icons/sound_muted.png'
+                ];
+
+                let loadedCount = 0;
+                const total = criticalUrls.length + 1; // +1 cho font
+
+                const checkItemDone = () => {
+                    loadedCount++;
+                    const calculated = 15 + Math.floor((loadedCount / total) * 80);
+                    let msg = '🌸 Đang nạp tài nguyên...';
+                    if (calculated < 40) msg = '🏛️ Đang tải khuôn viên trường & Nhà số 7...';
+                    else if (calculated < 70) msg = '👔 Đang chuẩn bị trang phục & 3 skin khởi đầu...';
+                    else if (calculated < 92) msg = '🌹 Đang chuẩn bị Vườn hoa hồng & Hội chợ...';
+                    else msg = '✨ Sẵn sàng bước vào khuôn viên trường!';
+
+                    this.setProgress(calculated, msg);
+
+                    if (loadedCount >= total) {
+                        this.setProgress(100, '✨ Tải hoàn tất! Đang bước vào thế giới...');
+                    }
+                };
+
+                // 1. Kiểm tra Google Fonts
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(() => checkItemDone()).catch(() => checkItemDone());
+                } else {
+                    checkItemDone();
+                }
+
+                // 2. Tải song song các ảnh cốt lõi
+                criticalUrls.forEach(url => {
+                    const img = new Image();
+                    img.onload = () => checkItemDone();
+                    img.onerror = () => checkItemDone(); // Dù lỗi mạng vẫn đếm để không bị kẹt
+                    img.src = url;
+                });
+
+                // 3. Timeout an toàn: Tối đa 3.5 giây sẽ tự động hoàn thành nếu mạng chậm
+                setTimeout(() => {
+                    this.setProgress(100, '✨ Đang bước vào thế giới...');
+                }, 3500);
+            },
+
+            finish() {
+                if (this.isFinished) return;
+                this.isFinished = true;
+
+                // Đảm bảo 3 preview avatar được vẽ lên canvas
+                try {
+                    if (window.uiManager && typeof window.uiManager.renderStarterSkinPreviews === 'function') {
+                        window.uiManager.renderStarterSkinPreviews();
+                    }
+                } catch (e) {}
+
+                // Giữ 100% trong 250ms để người chơi nhìn thấy hoàn thành
+                setTimeout(() => {
+                    if (this.container) {
+                        this.container.classList.add('preloader-fade-out');
+                        setTimeout(() => {
+                            this.container.style.display = 'none';
+                        }, 650);
+                    }
+                }, 250);
+            }
+        };
+
         function startTNUGame() {
             if (window.__tnuGameStarted) return;
             window.__tnuGameStarted = true;
+
+            // Kích hoạt Preloader màu be toàn cảnh ngay lập tức
+            TNUPreloader.init();
 
             // Khởi tạo Game State & UI
             try {
