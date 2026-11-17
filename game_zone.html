@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎡 Khu Trò Chơi Hội Chợ - Đại Học Tây Nguyên (TNU Fairground & Arcade)</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tnu: {
+                            blue: '#1d3557',
+                            lightBlue: '#457b9d',
+                            green: '#2d6a4f',
+                            red: '#e63946',
+                            gold: '#ffd166',
+                            sand: '#f4a261'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&family=Itim&family=Mali:wght@600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
+
+    <!-- Game Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0b132b;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .font-quest {
+            font-family: 'Patrick Hand', 'Mali', 'Outfit', cursive, sans-serif;
+        }
+        /* Custom modal scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(92, 71, 49, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b89b72;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8c6a43;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen select-none">
+
+    <div id="game-wrapper" class="relative w-[1280px] h-[720px] bg-[#1a2d24] rounded-2xl overflow-hidden shadow-2xl shadow-black border-2 border-[#5c4731]">
+        
+        <!-- Canvas Trò Chơi Chính -->
+        <canvas id="game-canvas" width="1280" height="720" class="block w-full h-full bg-[#5b8c5a]"></canvas>
+
+        <!-- Joystick Zone cho cảm ứng -->
+        <div id="joystick-zone" class="absolute bottom-6 left-6 w-36 h-36 z-30 pointer-events-auto"></div>
+
+        <!-- ========================================================
+             HUD THANH CÔNG CỤ KHU TRÒ CHƠI HỘI CHỢ
+             ======================================================== -->
+        <div id="hud-overlay" class="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none z-20">
+            <!-- Hàng nút tiện ích trên cùng -->
+            <div class="flex justify-between items-start pointer-events-auto w-full">
+                <!-- Tiêu đề Khu Trò Chơi -->
+                <div class="px-4 py-2 bg-[#fbf6d9]/95 border-2 border-[#5c4731] rounded-2xl shadow-lg font-quest text-xs text-[#3b2512] flex items-center gap-3">
+                    <span class="text-2xl animate-spin" style="animation-duration: 8s;">🎡</span>
+                    <div>
+                        <div class="font-bold text-sm text-[#2b1704]">KHU TRÒ CHƠI HỘI CHỢ TNU</div>
+                        <div class="text-[11px] text-[#6b4e31]">
+                            4 Gian hàng: <span class="text-red-700 font-bold">⚔️ Bắn Quái 3 Làn</span> • <span class="text-amber-700 font-bold">🍔 Hứng Đồ Ăn</span> • <span class="text-purple-700 font-bold">🧸 Gắp Gấu</span> • <span class="text-emerald-700 font-bold">🐮 Kéo Bò</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hàng nút điều khiển & chuyển trang -->
+                <div class="flex items-center space-x-2">
+                    <!-- Nút Bắn Quái Nhanh -->
+                    <button class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1" onclick="window.gameZoneManager.openGameBoard('shooting')">
+                        <span>⚔️</span> <span>Bắn Quái</span>
+                    </button>
+                    <!-- Nút Hứng Đồ Ăn Nhanh -->
+                    <button class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1" onclick="window.gameZoneManager.openGameBoard('food')">
+                        <span>🍔</span> <span>Hứng Đồ Ăn</span>
+                    </button>
+                    <!-- Nút Gắp Gấu Nhanh -->
+                    <button class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1" onclick="window.gameZoneManager.openGameBoard('claw')">
+                        <span>🧸</span> <span>Gắp Gấu</span>
+                    </button>
+                    <!-- Nút Kéo Bò Nhanh -->
+                    <button class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1" onclick="window.gameZoneManager.openGameBoard('cow')">
+                        <span>🐮</span> <span>Kéo Bò</span>
+                    </button>
+
+                    <!-- Âm thanh -->
+                    <button class="px-2.5 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center justify-center" id="btn-toggle-sound" title="Bật / Tắt Âm Thanh (Đang phát - Âm lượng 20%)">
+                        <img id="sound-icon-img" class="w-5 h-5 object-contain" src="assets/ui/icons/sound_normal.png" alt="Âm thanh" />
+                    </button>
+
+                    <!-- Gói Quà & Ghép Đồ Ăn [G] -->
+                    <button class="px-3.5 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1.5" onclick="window.uiManager.openCraftingModal()" title="Bàn Gói Quà & Chế Tạo Ẩm Thực [G]">
+                        <img src="assets/items/gio_qua_am_thuc.png" alt="Giỏ Quà" class="w-5 h-5 object-contain drop-shadow" /> <span>Gói Quà [G]</span>
+                    </button>
+
+                    <!-- Tủ Đồ [C] -->
+                    <button class="px-3 py-1.5 quest-image2-btn font-quest text-xs font-bold flex items-center space-x-1" onclick="window.uiManager.openWardrobeModal()">
+                        <span>👗</span> <span>Tủ Đồ [C]</span>
+                    </button>
+
+                    <!-- Mở Balo [B] -->
+                    <button class="px-3.5 py-1.5 quest-image2-btn font-quest text-xs font-bold flex items-center space-x-1" onclick="window.uiManager.openBackpackModal()">
+                        <img src="icon/bag.png" class="w-4 h-4 object-contain inline-block drop-shadow" /> <span>Balo Kho Đồ [B]</span>
+                    </button>
+
+                    <!-- Sang Vườn Hoa Hồng -->
+                    <a href="rose_garden.html" class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1">
+                        <span>🌹</span> <span>Vườn Hoa</span>
+                    </a>
+
+                    <!-- Về Sân Trường TNU -->
+                    <a href="index.html" class="px-3 py-1.5 quest-image2-btn font-quest text-xs font-bold flex items-center space-x-1">
+                        <span>🏛️</span> <span>Về Trường TNU</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- BẢNG TƯƠNG TÁC TỰ ĐỘNG HIỆN KHI ĐỨNG GẦN GIAN HÀNG -->
+            <div id="game-zone-proximity-prompt" class="self-center mb-2 px-5 py-2.5 bg-[#fbf6d9]/95 border-2 border-[#5c4731] rounded-2xl shadow-2xl font-quest text-xs text-[#3b2512] flex items-center gap-4 pointer-events-auto transition-all animate-bounce" style="display: none;">
+                <!-- Nội dung được cập nhật động từ js/game_zone.js -->
+            </div>
+
+            <!-- Bảng thông tin hướng dẫn ở góc dưới -->
+            <div class="flex justify-between items-end pointer-events-auto w-full">
+                <!-- Hướng dẫn điều khiển di chuyển -->
+                <div class="px-3.5 py-2 bg-[#fbf6d9]/95 border-2 border-[#5c4731] rounded-2xl shadow-lg font-quest text-xs text-[#3b2512] flex items-center gap-2">
+                    <span class="text-lg">⌨️</span>
+                    <div>
+                        <span class="font-bold text-[#2b1704]">Điều khiển:</span> Dùng phím <kbd class="px-1.5 py-0.5 bg-[#ebdcb4] border border-[#7c6348] rounded text-[10px] font-bold">W A S D</kbd> hoặc <kbd class="px-1.5 py-0.5 bg-[#ebdcb4] border border-[#7c6348] rounded text-[10px] font-bold">Mũi tên</kbd> để đi dạo quanh 4 quầy trò chơi!
+                    </div>
+                </div>
+
+                <!-- Thao tác nhanh kho đồ & Tủ đồ -->
+                <div class="px-4 py-2 bg-[#fbf6d9]/95 border-2 border-[#5c4731] rounded-2xl shadow-xl font-quest text-xs text-[#3b2512] flex items-center gap-3">
+                    <span class="font-bold text-amber-900">🎁 Kho Quà Tặng:</span>
+                    <button class="px-2.5 py-1 bg-[#dcfce7] hover:bg-[#bbf7d0] border border-[#166534] rounded-lg text-xs font-bold text-[#14532d]" onclick="window.uiManager.openBackpackModal()">
+                        🧸 Xem Gấu Bông & Đồ Ăn
+                    </button>
+                    <button class="px-2.5 py-1 bg-[#fef08a] hover:bg-[#fef9c3] border border-[#ca8a04] rounded-lg text-xs font-bold text-[#854d0e]" onclick="window.uiManager.openWardrobeModal()">
+                        👗 Thay Trang Phục & Cánh [C]
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL BẢNG TRÒ CHƠI CHÍNH (GAME BOARD MODAL)
+             ======================================================== -->
+        <div class="modal-overlay" id="game-board-modal">
+            <div class="modal-box modal-box-beige w-[800px] max-w-[96vw] max-h-[96vh] flex flex-col">
+                <!-- Header Bảng Game -->
+                <div class="modal-header-beige flex items-center justify-between py-2 px-4">
+                    <div class="flex items-center space-x-2.5 font-quest text-lg sm:text-xl font-bold text-[#3b2512]">
+                        <span id="game-board-icon" class="text-2xl">🎮</span>
+                        <span id="game-board-title">BẢNG TRÒ CHƠI HỘI CHỢ</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.gameZoneManager.closeGameBoard()" title="Đóng bảng game">&times;</button>
+                </div>
+
+                <!-- Thân Bảng Game -->
+                <div class="modal-body p-3 sm:p-4 space-y-2.5 font-quest flex flex-col items-center">
+                    <!-- Mô tả & Phần thưởng mục tiêu (Thiết kế chống bóp nghẹt chữ, tự dãn rộng thoáng đãng) -->
+                    <div class="w-full bg-[#f3e9c6] rounded-xl border border-[#7c6348] p-2.5 sm:px-3.5 shadow-sm flex flex-col gap-1.5">
+                        <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs">
+                            <div class="flex items-center gap-2 font-bold text-[#2b1704]">
+                                <span class="text-base">🕹️</span>
+                                <span id="game-board-desc" class="leading-snug">Chơi đạt điểm mục tiêu để nhận thưởng trực tiếp vào túi đồ!</span>
+                            </div>
+                            <div class="text-[11px] text-[#2d6a4f] font-semibold bg-[#e8f5e9] px-2.5 py-0.5 rounded-full border border-[#a3b18a] shrink-0">
+                                ✨ Quà tự động lưu vĩnh viễn vào Balo
+                            </div>
+                        </div>
+                        <!-- Danh sách phần thưởng xem trước dạng chip ngang -->
+                        <div id="game-board-rewards-preview" class="flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto py-0.5 w-full">
+                            <!-- Render bằng JS -->
+                        </div>
+                    </div>
+
+                    <!-- Khung Canvas Minigame 640 x 480 sắc nét, tự co dãn vừa vặn -->
+                    <div class="relative w-[640px] max-w-full aspect-[4/3] max-h-[58vh] bg-[#11111b] rounded-xl overflow-hidden border-2 border-[#5c4731] shadow-inner flex items-center justify-center">
+                        <canvas id="game-board-canvas" width="640" height="480" class="block w-full h-full object-contain"></canvas>
+                    </div>
+
+                    <!-- Thanh phím bấm điều khiển riêng cho từng minigame -->
+                    <div id="game-board-custom-controls" class="w-full flex items-center justify-center gap-2 py-1"></div>
+
+                    <!-- Thanh nút bấm chân modal -->
+                    <div class="w-full flex items-center justify-between pt-1">
+                        <div class="flex items-center gap-2">
+                            <button class="quest-image2-btn font-quest text-xs font-bold py-1.5 px-3 flex items-center gap-1.5 shadow-sm transform active:scale-95" onclick="window.gameZoneManager.restartCurrentGame()">
+                                <span>🔄</span> <span>Chơi Lại Ván Mới</span>
+                            </button>
+                            <button class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] active:bg-[#faedcd] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-sm flex items-center gap-1.5" onclick="window.uiManager.openBackpackModal()">
+                                <img src="icon/bag.png" class="w-4 h-4 object-contain inline-block drop-shadow" /> <span>Xem Balo Kho Đồ [B]</span>
+                            </button>
+                        </div>
+                        <button class="px-4 py-1.5 bg-[#e76f51] hover:bg-[#f4a261] text-white border-2 border-[#9d0208] rounded-xl text-xs font-bold font-quest transition-all shadow-sm" onclick="window.gameZoneManager.closeGameBoard()">
+                            <span>❌ Đóng Bảng Game</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL: BALO & HÀNH TRANG SINH VIÊN
+             ======================================================== -->
+        <div class="modal-overlay" id="backpack-modal">
+            <div class="modal-box modal-box-beige w-[780px] max-w-[95vw]">
+                <div class="modal-header-beige">
+                    <div class="flex items-center space-x-2 font-quest text-xl font-bold text-[#3b2512]">
+                        <img src="icon/bag.png" class="w-8 h-8 object-contain inline-block drop-shadow">
+                        <span>Balo & Túi Đồ Hội Chợ TNU</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()" title="Đóng">&times;</button>
+                </div>
+                <div class="modal-body p-4 space-y-3 font-quest">
+                    <div class="flex items-center justify-between text-xs text-[#5c4731] font-bold px-1">
+                        <span>📦 Danh sách vật phẩm đang có trong hành trang:</span>
+                        <span id="backpack-total-items-text" class="text-[#1e4620] bg-[#cbf0cb] border border-[#557053] px-2.5 py-0.5 rounded-full font-bold">Tổng: 0 món</span>
+                    </div>
+                    <!-- Lưới hiển thị vật phẩm linh hoạt, cuộn mượt -->
+                    <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-7 gap-2 max-h-[380px] overflow-y-auto p-1" id="backpack-items-grid">
+                        <!-- Render bằng UI Manager -->
+                    </div>
+                    <div class="p-3 bg-[#f3e9c6] rounded-xl border border-[#7c6348] flex items-center justify-between text-xs text-[#4a3520]">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">💡</span>
+                            <span>Bạn có thể thu thập đủ bộ <b>Thú Bông</b> và <b>Đồ Ăn Lễ Hội</b> bằng cách tham gia 4 quầy trò chơi!</span>
+                        </div>
+                        <button class="quest-image2-btn font-quest shrink-0 ml-3 text-xs py-1.5 px-3" onclick="window.uiManager.closeAllModals()">
+                            Đã hiểu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL: TỦ ĐỒ, CÁNH & PET (ĐỒNG BỘ CHUẨN 100%)
+             ======================================================== -->
+        <div class="modal-overlay" id="wardrobe-modal">
+            <div class="modal-box modal-box-beige w-[960px] max-w-[95vw]">
+                <div class="modal-header-beige">
+                    <div class="flex items-center space-x-2 font-quest text-xl font-bold text-[#3b2512]">
+                        <img src="icon/thien_cam.png" class="w-8 h-8 object-contain inline-block drop-shadow">
+                        <span>Tủ Đồ Thời Trang, Cánh Bay & Trang Phục Hoàn Chỉnh</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()" title="Đóng">&times;</button>
+                </div>
+                <div class="modal-body p-4 space-y-3 font-quest">
+                    <div id="wardrobe-progress-banner">
+                        <!-- Render thanh điểm thiện cảm -->
+                    </div>
+
+                    <!-- 3 Tabs chuyển đổi phong cách vintage/comic -->
+                    <div class="flex items-center space-x-2 mb-3 border-b-2 border-[#7c6348]/40 pb-2.5">
+                        <button class="wardrobe-tab-btn active flex items-center gap-1.5" id="tab-btn-outfits" onclick="window.wardrobeManager.switchTab('outfits')">
+                            <img class="interactive-icon w-6 h-6 object-contain" src="assets/ui/icons/shirt_active.png" data-normal="assets/ui/icons/shirt_normal.png" data-active="assets/ui/icons/shirt_active.png" alt="Trang Phục" />
+                            <span id="tab-txt-outfits">Trang Phục</span>
+                        </button>
+                        <button class="wardrobe-tab-btn flex items-center gap-1.5" id="tab-btn-wings" onclick="window.wardrobeManager.switchTab('wings')">
+                            <img class="interactive-icon w-6 h-6 object-contain" src="assets/ui/icons/wing_normal.png" data-normal="assets/ui/icons/wing_normal.png" data-active="assets/ui/icons/wing_active.png" alt="Cánh Bay" />
+                            <span id="tab-txt-wings">Cánh Bay & Biến Thể</span>
+                        </button>
+                        <button class="wardrobe-tab-btn flex items-center gap-1.5" id="tab-btn-pets" onclick="window.wardrobeManager.switchTab('pets')">
+                            <img class="interactive-icon w-6 h-6 object-contain" src="assets/ui/icons/paw_normal.png" data-normal="assets/ui/icons/paw_normal.png" data-active="assets/ui/icons/paw_active.png" alt="Thú Cưng" />
+                            <span id="tab-txt-pets">Thú Cưng (Pet Frames)</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-4">
+                        <!-- Danh sách vật phẩm (Cột trái) -->
+                        <div class="col-span-8 max-h-[410px] overflow-y-auto pr-1">
+                            <div class="grid grid-cols-2 gap-3" id="wardrobe-items-grid">
+                                <!-- Render danh sách thẻ bài -->
+                            </div>
+                        </div>
+
+                        <!-- Live Preview Nhân vật 360 độ (Cột phải) -->
+                        <div class="col-span-4 bg-[#fffcf2] border-2 border-[#8c6d48] rounded-2xl p-3 flex flex-col items-center justify-between text-center shadow-md">
+                            <div class="text-xs uppercase font-bold tracking-wider text-[#8c3b12] font-quest">Live 3D Preview</div>
+                            <div class="relative w-full flex items-center justify-center my-2 bg-[#f8f3df] rounded-xl border border-[#b89b72]/60 p-1">
+                                <canvas id="wardrobe-character-preview" width="220" height="240" class="rounded-xl"></canvas>
+                            </div>
+                            <div class="w-full text-[11px] text-[#5c4731] bg-[#f4ecc4] p-2 rounded-xl border border-[#7c6348]/40 font-quest">
+                                💡 Nhân vật vỗ cánh theo vật lý thời gian thực quanh trục pivot!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL: BÀN GÓI QUÀ & CHẾ TẠO ẨM THỰC TNU (CRAFTING MODAL)
+             ======================================================== -->
+        <div class="modal-overlay" id="crafting-modal">
+            <div class="modal-box modal-box-beige w-[720px] max-w-[96vw] max-h-[96vh] flex flex-col font-quest">
+                <div class="modal-header-beige flex items-center justify-between">
+                    <div class="flex items-center space-x-2 font-quest text-xl font-bold text-[#3b2512]">
+                        <span class="text-2xl">🧺</span>
+                        <span id="crafting-modal-header-title">XƯỞNG GÓI QUÀ & CHẾ TẠO ẨM THỰC TNU</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()">&times;</button>
+                </div>
+                <div class="modal-body p-4 space-y-3 font-quest overflow-y-auto" id="crafting-modal-body-container">
+                    <div id="crafting-recipe-tabs"></div>
+                    <div id="crafting-recipe-banner"></div>
+                    <div>
+                        <div class="text-xs font-bold text-[#5c4731] uppercase tracking-wider mb-2">Nguyên Liệu Ghép Bắt Buộc:</div>
+                        <div class="space-y-2 max-h-[260px] overflow-y-auto pr-1" id="crafting-ingredients-list"></div>
+                    </div>
+                    <button class="btn-action-primary w-full py-3 flex items-center justify-center gap-2 font-bold text-sm" id="btn-craft-action">
+                        <span>CHẾ TẠO NGAY</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL: ĐỐI THOẠI NPC (DIALOGUE MODAL)
+             ======================================================== -->
+        <div class="modal-overlay" id="dialogue-modal">
+            <div class="modal-box modal-box-beige w-[560px] max-w-[95vw] overflow-hidden shadow-2xl font-quest">
+                <div class="modal-header-beige flex items-center justify-between">
+                    <div class="flex items-center space-x-2 font-quest text-lg font-bold text-[#3b2512]">
+                        <span class="text-xl">💬</span>
+                        <span id="dialogue-modal-header-title">TRÒ CHUYỆN & TƯƠNG TÁC</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()" title="Đóng [Esc]">&times;</button>
+                </div>
+                <div class="modal-body p-4 sm:p-5 space-y-3.5 font-quest">
+                    <!-- Khu vực Thông tin NPC: Avatar + Tên + Chức danh -->
+                    <div class="flex items-center gap-3.5 pb-2.5 border-b border-[#7c6348]/30">
+                        <div class="w-[72px] h-[72px] rounded-2xl bg-[#fffcf2] border-2 border-[#8c6d48] p-1 shadow-sm flex items-center justify-center shrink-0" id="dialogue-npc-avatar">
+                            🧑‍🎓
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-quest font-bold text-xl text-[#3b2512] leading-tight flex items-center gap-2 truncate" id="dialogue-npc-name">
+                                Tên NPC
+                            </div>
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#faeed0] border border-[#d4a373] text-[#8c3b12] text-xs font-bold font-quest mt-1 shadow-2xs truncate max-w-full" id="dialogue-npc-title">
+                                Chức vụ
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bong bóng Lời thoại NPC phong cách Comic Beige -->
+                    <div class="dialogue-speech-box" id="dialogue-npc-text">
+                        Lời thoại...
+                    </div>
+
+                    <!-- Danh sách các nút tương tác / tặng quà / nhiệm vụ -->
+                    <div class="flex flex-col space-y-2 pt-1" id="dialogue-actions">
+                        <!-- Render các nút hành động -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div id="toast-container" class="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-2 pointer-events-none z-50"></div>
+
+        <!-- Banner Chúc Mừng -->
+        <div id="celebration-banner" class="celebration-banner">
+            <div class="celebration-title" id="celebration-title">🎉 CHÚC MỪNG CHIẾN THẮNG!</div>
+            <div class="celebration-desc" id="celebration-desc">Bạn vừa nhận được vật phẩm mới vào Balo!</div>
+        </div>
+
+    </div>
+
+    <!-- VENDOR SCRIPTS -->
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/nipplejs.min.js"></script>
+    <script src="vendor/confetti.min.js"></script>
+
+    <!-- CORE GAME SCRIPTS -->
+    <script src="js/i18n.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/wing_db.js"></script>
+    <script src="js/pet_db.js"></script>
+    <script src="js/head_db.js"></script>
+    <script src="js/body_db.js"></script>
+    <script src="js/npc_db.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/minigames.js"></script>
+    <script src="js/crafting.js"></script>
+    <script src="js/wardrobe.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/game.js"></script>
+
+    <!-- MODULE KHU TRÒ CHƠI HỘI CHỢ (GAME ZONE MODULE) -->
+    <script src="js/game_zone.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Đặt map hiện tại là map3_arcade
+            if (window.useGameStore) {
+                window.useGameStore.setState({ currentMapId: 'map3_arcade' });
+            }
+
+            // Khởi tạo UI Manager
+            if (window.uiManager) window.uiManager.init();
+
+            // Khởi tạo Game Engine
+            window.gameInstance = new GameEngine();
+            window.gameInstance.init();
+
+            // Đặt vị trí nhân vật ngay ngã tư đường lát đá trung tâm hội chợ
+            if (window.gameInstance && window.gameInstance.player) {
+                window.gameInstance.player.x = 640;
+                window.gameInstance.player.y = 360;
+            }
+
+            // Bật / tắt âm thanh & điều chỉnh âm lượng
+            const soundBtn = document.getElementById('btn-toggle-sound');
+            const soundIconImg = document.getElementById('sound-icon-img');
+            if (soundBtn && window.soundSystem) {
+                soundBtn.onclick = () => {
+                    window.soundSystem.init();
+                    const isMuted = window.soundSystem.toggleMute();
+                    if (soundIconImg) {
+                        soundIconImg.src = isMuted ? 'assets/ui/icons/sound_muted.png' : 'assets/ui/icons/sound_normal.png';
+                        soundIconImg.classList.add('icon-pop-spring');
+                        setTimeout(() => soundIconImg.classList.remove('icon-pop-spring'), 450);
+                    }
+                };
+
+                // Lăn chuột trên nút âm thanh để tăng / giảm âm lượng mượt mà
+                soundBtn.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    if (!window.soundSystem) return;
+                    window.soundSystem.init();
+                    let currentVol = window.soundSystem.bgmVolume;
+                    currentVol += (e.deltaY < 0 ? 0.05 : -0.05);
+                    currentVol = Math.max(0.05, Math.min(1.0, currentVol));
+                    window.soundSystem.setVolume(currentVol);
+                    const percent = Math.round(currentVol * 100);
+                    if (window.soundSystem.isMuted) {
+                        window.soundSystem.toggleMute();
+                    }
+                    if (window.uiManager && typeof window.uiManager.showToast === 'function') {
+                        window.uiManager.showToast(`🔊 Âm lượng nhạc nền: ${percent}%`, 'info');
+                    }
+                    soundBtn.title = `Tắt Âm Thanh (Đang phát - Âm lượng ${percent}%) - Cuộn chuột để chỉnh`;
+                }, { passive: false });
+            }
+
+            // Phím tắt bàn phím [G] Gói quà, [B] Balo, [C] Tủ đồ
+            window.addEventListener('keydown', (e) => {
+                // Không bắt phím khi đang gõ vào input text
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (e.code === 'KeyG') {
+                    if (window.uiManager) window.uiManager.openCraftingModal();
+                } else if (e.code === 'KeyB') {
+                    if (window.uiManager) window.uiManager.openBackpackModal();
+                } else if (e.code === 'KeyC') {
+                    if (window.uiManager) window.uiManager.openWardrobeModal();
+                }
+            });
+
+            // Đóng modal khi bấm ra ngoài lớp phủ
+            const boardModal = document.getElementById('game-board-modal');
+            if (boardModal) {
+                boardModal.addEventListener('click', (e) => {
+                    if (e.target === boardModal) {
+                        window.gameZoneManager.closeGameBoard();
+                    }
+                });
+            }
+
+            // Thông báo chào mừng
+            setTimeout(() => {
+                if (window.uiManager) {
+                    window.uiManager.showToast('🎡 Chào mừng bạn đến với Khu Trò Chơi Hội Chợ TNU! Hãy lại gần bất kỳ quầy nào để mở bảng game và nhận thật nhiều gấu bông, đồ ăn ngon nhé!', 'info');
+                }
+            }, 600);
+        });
+    </script>
+</body>
+</html>

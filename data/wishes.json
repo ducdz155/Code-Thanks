@@ -1,0 +1,72 @@
+[
+  {
+    "id": "w_1794897302093_pw56",
+    "author": "Thương Hải Thần Long (K45)",
+    "target": "TS. Nguyễn Thị Như",
+    "tag": "Tri Ân 20/11 Online",
+    "content": "Kính chúc Cô luôn dồi dào sức khỏe, luôn truyền cảm hứng và yêu thương sinh viên!",
+    "likes": 5,
+    "color": "#ffc6ff",
+    "time": "17/11/2026"
+  },
+  {
+    "id": "w1",
+    "author": "Minh Tuấn (K45 CNTT)",
+    "target": "ThS. Nguyễn Quốc Cường",
+    "tag": "Công Nghệ Thông Tin",
+    "content": "Nhớ mãi những đêm Thầy ngồi lại phòng lab kiên nhẫn hướng dẫn từng lỗi logic đồ án tốt nghiệp cho nhóm em. Nhân ngày 20/11, chúc Thầy luôn dồi dào sức khỏe và mãi giữ nụ cười thân thiện!",
+    "likes": 55,
+    "color": "#fff3b0",
+    "time": "17/11/2026"
+  },
+  {
+    "id": "w2",
+    "author": "Thanh Thảo (K45 CNTT)",
+    "target": "TS. Nguyễn Thị Như",
+    "tag": "Bộ môn Kỹ Thuật Phần Mềm",
+    "content": "Cô Như như một người chị hiền luôn chu đáo lắng nghe và động viên chúng em vượt qua những kỳ thi cam go nhất. Kính chúc Cô luôn tươi trẻ, hạnh phúc và thành công trên bục giảng!",
+    "likes": 56,
+    "color": "#ffd6a5",
+    "time": "17/11/2026"
+  },
+  {
+    "id": "w3",
+    "author": "Hoàng Nam (K45 CNTT)",
+    "target": "ThS. Nguyễn Đức Thắng",
+    "tag": "Khoa học Máy tính",
+    "content": "Chúc Thầy Thắng ngọn lửa nhiệt huyết công nghệ luôn bùng cháy! Cảm ơn Thầy đã truyền cho chúng em tình yêu với lập trình và tư duy giải quyết vấn đề thực tế!",
+    "likes": 39,
+    "color": "#fdffb6",
+    "time": "17/11/2026"
+  },
+  {
+    "id": "w4",
+    "author": "Thu Hà (K44 Nông Lâm)",
+    "target": "Quý Thầy Cô Khoa Nông Lâm Nghiệp",
+    "tag": "Nông Lâm Nghiệp",
+    "content": "Cảm ơn Thầy Cô đã dạy chúng em biết trân quý từng hạt mầm, từng tấc đất bazan trù phú của Tây Nguyên đại ngàn. Kính chúc Thầy Cô một mùa hiến chương ấm áp!",
+    "likes": 42,
+    "color": "#caffbf",
+    "time": "17/11/2026"
+  },
+  {
+    "id": "w5",
+    "author": "Nhóm Đồ Án Tốt Nghiệp K45",
+    "target": "Toàn thể Giảng viên TNU",
+    "tag": "K45 TNU",
+    "content": "4 năm thanh xuân dưới mái trường Đại học Tây Nguyên sẽ là hành trang vô giá theo suốt cuộc đời chúng em. Tri ân công lao dạy dỗ bao la của tất cả Quý Thầy Cô!",
+    "likes": 95,
+    "color": "#ffc6ff",
+    "time": "17/11/2026"
+  },
+  {
+    "id": "w6",
+    "author": "Đức Trọng (K46 Y Dược)",
+    "target": "Các Thầy Cô Bệnh viện Thực hành",
+    "tag": "Y Đa Khoa",
+    "content": "Dưới tà áo blouse trắng, sự tận tụy cứu người và dạy học của Thầy Cô là tấm gương sáng nhất cho chúng em noi theo. Kính chúc Thầy Cô luôn bình an và hạnh phúc!",
+    "likes": 51,
+    "color": "#9bf6ff",
+    "time": "17/11/2026"
+  }
+]

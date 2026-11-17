@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TNU: Đôi Cánh Đại Ngàn - Đại Học Tây Nguyên</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tnu: {
+                            blue: '#1d3557',
+                            lightBlue: '#457b9d',
+                            green: '#2d6a4f',
+                            red: '#e63946',
+                            gold: '#ffd166',
+                            sand: '#f4a261'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&family=Itim&family=Mali:wght@600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #090d16;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+        /* Custom scrollbar for wardrobe grid */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffd166;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen select-none">
+
+    <div id="game-wrapper" class="relative w-[1280px] h-[720px] bg-slate-950 rounded-2xl overflow-hidden shadow-2xl shadow-black border border-slate-800">
+        <!-- Canvas Trò Chơi Chính -->
+        <canvas id="game-canvas" width="1280" height="720" class="block w-full h-full bg-[#1b263b]"></canvas>
+
+        <!-- Joystick Zone cho Nipple.js (Mobile / Tablet / Touch Screen) -->
+        <div id="joystick-zone" class="absolute bottom-6 left-6 w-36 h-36 z-30 pointer-events-auto"></div>
+
+        <!-- ========================================================
+             HUD (GIAO DIỆN HIỂN THỊ TRỰC TIẾP TRÊN MÀN HÌNH - CHUẨN ẢNH)
+             ======================================================== -->
+        <div id="hud-overlay" class="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none z-20">
+            <!-- Thanh trên cùng: Hàng nút tiện ích tinh gọn bên phải -->
+            <div class="flex justify-end items-start pointer-events-auto w-full transition-all duration-300" id="hud-top-bar">
+                <!-- Hàng nút tiện ích tinh gọn bên phải (Tự động lùi về trái khi có Minimap) -->
+                <div class="flex items-center space-x-2 transition-all duration-300" id="hud-top-buttons">
+                    <!-- Đổi Ngôn Ngữ -->
+                    <button class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1" id="btn-toggle-lang">
+                        <span>🌐</span> <span id="btn-txt-lang">English</span>
+                    </button>
+                    <!-- Âm thanh -->
+                    <button class="px-2.5 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center justify-center" id="btn-toggle-sound" title="Bật / Tắt Âm Thanh (Đang phát - Âm lượng 20%)">
+                        <img id="sound-icon-img" class="w-5 h-5 object-contain" src="assets/ui/icons/sound_normal.png" alt="Âm thanh" />
+                    </button>
+                    <!-- Bàn Gói Quà [G] -->
+                    <button class="px-3.5 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1.5" id="btn-open-crafting-hud" title="Mở Bàn Gói Quà [G]">
+                        <img class="interactive-icon w-5 h-5 object-contain" src="assets/ui/icons/gift_normal.png" data-normal="assets/ui/icons/gift_normal.png" data-active="assets/ui/icons/gift_active.png" alt="Gói Quà" />
+                        <span>Gói Quà [G]</span>
+                    </button>
+                    <!-- Hồ Sơ & Đổi Nhân Vật -->
+                    <button class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1.5" id="btn-open-character-setup" onclick="window.uiManager.openCharacterSetupModal(true)" title="Xem hồ sơ nhân vật & Đổi Skin">
+                        <img class="interactive-icon w-5 h-5 object-contain" src="assets/ui/icons/graduate_normal.png" data-normal="assets/ui/icons/graduate_normal.png" data-active="assets/ui/icons/graduate_active.png" alt="Tân Sinh Viên" />
+                        <span id="hud-top-player-name">Tân Sinh Viên</span>
+                    </button>
+                    <!-- Tủ Đồ [C] -->
+                    <button class="px-3.5 py-1.5 quest-image2-btn font-quest text-xs font-bold flex items-center space-x-1.5" id="btn-open-wardrobe-hud" title="Mở Tủ Đồ [C]">
+                        <img class="interactive-icon w-5 h-5 object-contain" src="assets/ui/icons/dress_normal.png" data-normal="assets/ui/icons/dress_normal.png" data-active="assets/ui/icons/dress_active.png" alt="Tủ Đồ" />
+                        <span>Tủ Đồ, Cánh & Pet [C]</span>
+                    </button>
+                    <!-- Hướng Dẫn [?] -->
+                    <button class="px-2.5 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center justify-center" id="btn-open-help" title="Cẩm nang hướng dẫn [?]">
+                        <img class="interactive-icon w-5 h-5 object-contain" src="assets/ui/icons/help_normal.png" data-normal="assets/ui/icons/help_normal.png" data-active="assets/ui/icons/help_active.png" alt="Hướng dẫn" />
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========================================================
+                 HUD MINIMAP - BẢN ĐỒ TOÀN TRƯỜNG ĐẠI HỌC TÂY NGUYÊN
+                 (Chỉ hiển thị độc quyền tại Map 1 TNU Campus)
+                 Chuẩn 100% theo ảnh tham chiếu media_1794879991369_7dcbeda1.png
+                 ======================================================== -->
+            <div id="hud-minimap-container" class="absolute top-2.5 right-3.5 z-35 flex flex-col items-center pointer-events-auto select-none transition-all duration-300">
+                <!-- Ribbon Header Banner Cuộn Sớ -->
+                <div class="hud-minimap-ribbon-wrap -mb-2 z-20 pointer-events-none">
+                    <svg class="hud-minimap-ribbon-svg" viewBox="0 0 200 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Left Tail -->
+                        <path d="M30 6 L6 6 L15 16 L6 26 L30 26 Z" fill="#faeed0" stroke="#3c2a1e" stroke-width="2.2" stroke-linejoin="round" />
+                        <!-- Right Tail -->
+                        <path d="M170 6 L194 6 L185 16 L194 26 L170 26 Z" fill="#faeed0" stroke="#3c2a1e" stroke-width="2.2" stroke-linejoin="round" />
+                        <!-- Center Banner Body -->
+                        <rect x="22" y="2.5" width="156" height="27" rx="6" fill="#fedc82" stroke="#3c2a1e" stroke-width="2.2" />
+                        <!-- Text Title -->
+                        <text x="100" y="20.5" text-anchor="middle" font-family="'Patrick Hand', 'Itim', 'Comfortaa', cursive, sans-serif" font-size="13" font-weight="900" fill="#3c2a1e" letter-spacing="0.5">Đại Học Tây Nguyên</text>
+                    </svg>
+                </div>
+
+                <!-- Khung Thẻ Minimap Retro -->
+                <div class="hud-minimap-card relative overflow-hidden bg-[#e8eed9]">
+                    <!-- Canvas Bản đồ thu nhỏ -->
+                    <canvas id="minimap-canvas" width="220" height="155" class="block w-full h-full cursor-crosshair"></canvas>
+
+                    <!-- Top center: Badge Khu an toàn -->
+                    <div class="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[9.5px] font-bold text-[#3c2a1e] bg-[#fbf6e0]/90 border border-[#5c4731] shadow-xs pointer-events-none select-none z-10 flex items-center gap-1 leading-none">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                        <span>Khu an toàn</span>
+                    </div>
+
+                    <!-- Top right: La bàn B (Bắc - North) -->
+                    <div class="absolute top-1.5 right-2 flex items-center gap-0.5 bg-[#fbf6e0]/90 px-1.5 py-0.5 rounded-full border border-[#5c4731] shadow-xs pointer-events-none select-none z-10">
+                        <span class="text-[#d90429] font-black text-[10px] leading-none">B</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L15 11L12 9L9 11L12 2Z" fill="#d90429"/>
+                            <path d="M12 22L9 13L12 15L15 13L12 22Z" fill="#8d99ae"/>
+                        </svg>
+                    </div>
+
+                    <!-- Bottom Left: Nút Zoom - và Zoom + -->
+                    <div class="absolute bottom-1.5 left-2 flex items-center gap-1 z-10">
+                        <button id="btn-minimap-zoom-out" title="Thu nhỏ (Toàn trường)" class="hud-minimap-btn">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <circle cx="11" cy="11" r="7"/>
+                                <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+                                <line x1="8" y1="11" x2="14" y2="11"/>
+                            </svg>
+                        </button>
+                        <button id="btn-minimap-zoom-in" title="Phóng to (Cận cảnh)" class="hud-minimap-btn">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <circle cx="11" cy="11" r="7"/>
+                                <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+                                <line x1="11" y1="8" x2="11" y2="14"/>
+                                <line x1="8" y1="11" x2="14" y2="11"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Bottom Right: Kênh 1 & Nút Mở Bản Đồ Lớn 🗺️ -->
+                    <div class="absolute bottom-1.5 right-2 flex items-center gap-1 z-10">
+                        <div class="px-1.5 py-0.5 rounded text-[9.5px] font-bold text-[#3c2a1e] bg-[#fbf6e0]/90 border border-[#3c2a1e] shadow-xs select-none leading-tight">
+                            Kênh 1
+                        </div>
+                        <button id="btn-minimap-expand" title="Mở bản đồ lớn toàn trường" class="hud-minimap-btn text-[11px]">
+                            🗺️
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THANH NHIỆM VỤ GẦN TRÊN CÙNG BÊN TRÁI (Chuẩn yêu cầu: Gọn gàng, chữ Nhiệm vụ, click mở danh sách tất cả nhiệm vụ) -->
+            <div id="hud-quest-container" class="quest-compact-bar cursor-pointer" onclick="window.uiManager.openQuestModal()" title="Bấm để xem danh sách nhiệm vụ và chọn làm [Q]">
+                <div class="flex items-center gap-2 min-w-0">
+                    <img id="hud-quest-icon" class="interactive-icon w-6 h-6 object-contain shrink-0" src="assets/ui/icons/scroll_normal.png" data-normal="assets/ui/icons/scroll_normal.png" data-active="assets/ui/icons/scroll_active.png" alt="Nhiệm vụ" />
+                    <div class="flex flex-col justify-center min-w-0">
+                        <div class="font-quest font-bold text-xs text-[#3b2512] flex items-center gap-1.5 leading-none">
+                            <span id="lbl-quest-header">Nhiệm vụ</span>
+                            <span class="quest-badge" id="hud-quest-count-badge">7</span>
+                        </div>
+                        <div class="text-[11px] text-[#6b5037] font-quest truncate max-w-[130px] mt-0.5 leading-tight" id="hud-quest-title">
+                            Tìm đồ án cho anh sinh viên CNTT
+                        </div>
+                    </div>
+                </div>
+                <button class="quest-image2-btn font-quest text-[11px] py-1 px-2.5 shrink-0 ml-1 flex items-center gap-1" id="btn-quest-goto" onclick="event.stopPropagation(); window.uiManager.goToQuest()" title="Bấm để tìm đường đến mục tiêu nhiệm vụ [Q]">
+                    <img class="interactive-icon w-3.5 h-3.5 object-contain" src="assets/ui/icons/compass_normal.png" data-normal="assets/ui/icons/compass_normal.png" data-active="assets/ui/icons/compass_active.png" alt="La bàn" />
+                    <span>Đi tới</span>
+                </button>
+            </div>
+
+            <!-- BẢNG TƯƠNG TÁC TỰ ĐỘNG HIỆN KHI ĐỨNG GẦN GIAN HÀNG KHU TRÒ CHƠI -->
+            <div id="game-zone-proximity-prompt" class="absolute bottom-24 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-[#fbf6d9]/95 border-2 border-[#5c4731] rounded-2xl shadow-2xl font-quest text-xs text-[#3b2512] flex items-center gap-4 pointer-events-auto transition-all animate-bounce z-40" style="display: none;"></div>
+
+            <!-- Thanh dưới cùng: Hộp Trò Chuyện (Trái) & Balo, Thiện Cảm (Phải) -->
+            <div class="flex items-end justify-between gap-3 pointer-events-auto w-full">
+                <!-- 1. HỘP TRÒ CHUYỆN (CHAT BOX CHUẨN ẢNH VINTAGE MMORPG) -->
+                <div id="hud-chat-box" class="hud-chat-container">
+                    <!-- Ribbon Header (Chuẩn 100% Theo Ảnh Tham Chiếu media_1794826468754_accbb9d6.jpg) -->
+                    <div class="hud-chat-header">
+                        <div class="hud-chat-ribbon-wrap">
+                            <svg class="hud-chat-ribbon-svg" viewBox="0 0 280 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Left Tail (Đuôi nơ chữ V bên trái) -->
+                                <path d="M42 8 L12 8 L24 20 L12 32 L42 32 Z" fill="#faeed0" stroke="#3c2a1e" stroke-width="2.5" stroke-linejoin="round"/>
+                                
+                                <!-- Right Tail (Đuôi nơ chữ V bên phải) -->
+                                <path d="M238 8 L268 8 L256 20 L268 32 L238 32 Z" fill="#faeed0" stroke="#3c2a1e" stroke-width="2.5" stroke-linejoin="round"/>
+                                
+                                <!-- Center Banner Body (Thân cuộn sớ bo tròn trung tâm) -->
+                                <rect x="34" y="3.5" width="212" height="33" rx="7" fill="#fedc82" stroke="#3c2a1e" stroke-width="2.5"/>
+                                
+                                <!-- Text "Trò chuyện" chuẩn font chữ viết tay -->
+                                <text x="140" y="26" text-anchor="middle" font-family="'Patrick Hand', 'Itim', 'Mali', cursive" font-weight="800" font-size="20" fill="#3c2a1e" letter-spacing="0.5">Trò chuyện</text>
+                            </svg>
+                        </div>
+
+                        <!-- 2 Nút Hành Động Trực Tiếp (Không đóng khung viền vuông chuẩn ảnh) -->
+                        <div class="hud-chat-header-actions">
+                            <button class="hud-chat-icon-action" id="btn-chat-expand" onclick="window.uiManager.toggleChatExpand()" title="Mở rộng / Thu vừa">
+                                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#3c2a1e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 2H14V6"/>
+                                    <path d="M14 2L9 7"/>
+                                    <path d="M6 14H2V10"/>
+                                    <path d="M2 14L7 9"/>
+                                </svg>
+                            </button>
+                            <button class="hud-chat-icon-action" id="btn-chat-minimize" onclick="window.uiManager.toggleChatMinimize()" title="Thu nhỏ">
+                                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#3c2a1e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3.5 6L8 10.5L12.5 6"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Channel Tabs (Chuẩn 100% Theo Ảnh 2: Thẻ Sớ Cổ Điển Có Nơ & Chữ Viết Tay) -->
+                    <div class="hud-chat-tabs">
+                        <button class="hud-chat-tab active" data-channel="school" onclick="window.uiManager.switchChatChannel('school', this)">
+                            <img class="interactive-icon" src="assets/ui/icons/megaphone_active.png" data-normal="assets/ui/icons/megaphone_normal.png" data-active="assets/ui/icons/megaphone_active.png" alt="Toàn trường" />
+                            <span>Toàn trường</span>
+                        </button>
+                        <button class="hud-chat-tab" data-channel="friends" onclick="window.uiManager.switchChatChannel('friends', this)">
+                            <img class="interactive-icon" src="assets/ui/icons/friends_normal.png" data-normal="assets/ui/icons/friends_normal.png" data-active="assets/ui/icons/friends_active.png" alt="Bạn bè" />
+                            <span>Bạn bè</span>
+                        </button>
+                        <button class="hud-chat-tab" data-channel="quest" onclick="window.uiManager.switchChatChannel('quest', this)">
+                            <img class="interactive-icon" src="assets/ui/icons/scroll_normal.png" data-normal="assets/ui/icons/scroll_normal.png" data-active="assets/ui/icons/scroll_active.png" alt="Đồ án" />
+                            <span>Đồ án</span>
+                        </button>
+                        <button class="hud-chat-tab" data-channel="notice" onclick="window.uiManager.switchChatChannel('notice', this)">
+                            <img class="interactive-icon" src="assets/ui/icons/bell_normal.png" data-normal="assets/ui/icons/bell_normal.png" data-active="assets/ui/icons/bell_active.png" alt="Thông báo" />
+                            <span>Thông báo</span>
+                        </button>
+                    </div>
+
+                    <!-- Quick Response Chips -->
+                    <div class="hud-chat-chips">
+                        <button class="hud-chat-chip flex items-center font-bold text-[#8c3b12] bg-[#faeed0] border-2 border-[#d4a373]" onclick="window.uiManager.openChatWithPrefill('Chúc mừng ngày nhà giáo Việt Nam 20/11')" title="Hiện sẵn câu chúc 20/11 để mở khóa Cánh">
+                            <span class="mr-1 text-sm">🪽</span>
+                            <span>Chúc 20/11</span>
+                        </button>
+                        <button class="hud-chat-chip flex items-center" onclick="window.uiManager.sendQuickChat('Chào')">
+                            <img class="interactive-icon" src="assets/ui/icons/wave_normal.png" data-normal="assets/ui/icons/wave_normal.png" data-active="assets/ui/icons/wave_active.png" alt="Chào" />
+                            <span>Chào</span>
+                        </button>
+                        <button class="hud-chat-chip flex items-center" onclick="window.uiManager.sendQuickChat('Cám ơn')">
+                            <img class="interactive-icon" src="assets/ui/icons/heart_normal.png" data-normal="assets/ui/icons/heart_normal.png" data-active="assets/ui/icons/heart_active.png" alt="Cám ơn" />
+                            <span>Cám ơn</span>
+                        </button>
+                        <button class="hud-chat-chip flex items-center" onclick="window.uiManager.sendQuickChat('Giúp với')">
+                            <img class="interactive-icon" src="assets/ui/icons/lifebuoy_normal.png" data-normal="assets/ui/icons/lifebuoy_normal.png" data-active="assets/ui/icons/lifebuoy_active.png" alt="Giúp với" />
+                            <span>Giúp với</span>
+                        </button>
+                        <button class="hud-chat-chip flex items-center" onclick="window.uiManager.sendQuickChat('Đi đâu?')">
+                            <img class="interactive-icon" src="assets/ui/icons/compass_normal.png" data-normal="assets/ui/icons/compass_normal.png" data-active="assets/ui/icons/compass_active.png" alt="Đi đâu?" />
+                            <span>Đi đâu?</span>
+                        </button>
+                        <button class="hud-chat-chip-emoji flex items-center justify-center p-0.5" onclick="window.uiManager.sendQuickChat('😊')" title="Biểu cảm">
+                            <img class="interactive-icon w-5 h-5 object-contain" src="assets/ui/icons/chat_normal.png" data-normal="assets/ui/icons/chat_normal.png" data-active="assets/ui/icons/chat_active.png" alt="Biểu cảm" />
+                        </button>
+                    </div>
+
+                    <!-- Message History Feed (Nội dung chuẩn Đại Học Tây Nguyên & Icon ≡ ✉️ theo ảnh 2) -->
+                    <div class="hud-chat-body" id="hud-chat-messages">
+                        <div class="hud-chat-msg" data-channel="notice">
+                            <div class="msg-badge-group">
+                                <span class="msg-bullet-lines">≡</span>
+                                <svg class="msg-envelope-icon" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="0.75" y="0.75" width="14.5" height="10.5" rx="1.5" fill="#fdfbf7" stroke="#3c2a1e" stroke-width="1.5"/>
+                                    <path d="M1.5 1.5L8 6.5L14.5 1.5" stroke="#3c2a1e" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="hud-chat-msg-text">Nhận 200 Xu sinh viên & 1 Bó hoa hồng hoàn chỉnh.</span>
+                            <span class="hud-chat-msg-time">17:01</span>
+                        </div>
+                        <div class="hud-chat-msg" data-channel="notice">
+                            <div class="msg-badge-group">
+                                <span class="msg-bullet-lines">≡</span>
+                                <svg class="msg-envelope-icon" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="0.75" y="0.75" width="14.5" height="10.5" rx="1.5" fill="#fdfbf7" stroke="#3c2a1e" stroke-width="1.5"/>
+                                    <path d="M1.5 1.5L8 6.5L14.5 1.5" stroke="#3c2a1e" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="hud-chat-msg-text">[Thông báo] Bạn đã tới khuôn viên Trường Đại Học Tây Nguyên. Khám phá đạt 25%.</span>
+                            <span class="hud-chat-msg-time">17:01</span>
+                        </div>
+                        <div class="hud-chat-msg" data-channel="quest">
+                            <div class="msg-badge-group">
+                                <span class="msg-bullet-lines">≡</span>
+                                <svg class="msg-envelope-icon" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="0.75" y="0.75" width="14.5" height="10.5" rx="1.5" fill="#fdfbf7" stroke="#3c2a1e" stroke-width="1.5"/>
+                                    <path d="M1.5 1.5L8 6.5L14.5 1.5" stroke="#3c2a1e" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="hud-chat-msg-text"><b class="text-[#8c3b12]">[Đồ án] Minh Tuấn (K45):</b> Ai qua Tòa Điều Hành nhặt giúp mình 3 trang tài liệu với!</span>
+                            <span class="hud-chat-msg-time">17:01</span>
+                        </div>
+                        <div class="hud-chat-msg" data-channel="school">
+                            <div class="msg-badge-group">
+                                <span class="msg-bullet-lines">≡</span>
+                                <svg class="msg-envelope-icon" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="0.75" y="0.75" width="14.5" height="10.5" rx="1.5" fill="#fdfbf7" stroke="#3c2a1e" stroke-width="1.5"/>
+                                    <path d="M1.5 1.5L8 6.5L14.5 1.5" stroke="#3c2a1e" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="hud-chat-msg-text"><b class="text-[#2d6a4f]">[Toàn trường] Sinh Viên K46:</b> Hồ Sinh Thái hôm nay gió mát rượi, cầu gỗ chụp ảnh kỷ yếu siêu đẹp!</span>
+                            <span class="hud-chat-msg-time">17:01</span>
+                        </div>
+                        <div class="hud-chat-msg" data-channel="friends">
+                            <div class="msg-badge-group">
+                                <span class="msg-bullet-lines">≡</span>
+                                <svg class="msg-envelope-icon" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="0.75" y="0.75" width="14.5" height="10.5" rx="1.5" fill="#fdfbf7" stroke="#3c2a1e" stroke-width="1.5"/>
+                                    <path d="M1.5 1.5L8 6.5L14.5 1.5" stroke="#3c2a1e" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="hud-chat-msg-text"><b class="text-[#b5179e]">[Bạn bè] SV Y Dược:</b> Vườn dược liệu Nhà số 2 đang nở hoa hồng rực rỡ, ghé hái hoa cùng mình nha!</span>
+                            <span class="hud-chat-msg-time">17:01</span>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Input Bar -->
+                    <div class="hud-chat-input-bar">
+                        <button class="hud-chat-channel-btn" id="btn-chat-channel-select" onclick="window.uiManager.cycleChatChannel()">
+                            <span id="txt-chat-current-channel">Toàn trường</span> <span>▼</span>
+                        </button>
+                        <input type="text" id="chat-input" class="hud-chat-input" placeholder="Nhấn Enter để trò chuyện" maxlength="120" autocomplete="off" onkeydown="if(event.key==='Enter') window.uiManager.sendChatMessage()" />
+                        <button class="hud-chat-send-btn flex items-center justify-center" id="btn-chat-send" onclick="window.uiManager.sendChatMessage()" title="Gửi tin nhắn">
+                            <img class="interactive-icon" src="assets/ui/icons/plane_normal.png" data-normal="assets/ui/icons/plane_normal.png" data-active="assets/ui/icons/plane_active.png" alt="Gửi" />
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. CỤM TIỆN ÍCH BÊN PHẢI: ICON BALO GỌN GÀNG & THANH THIỆN CẢM -->
+                <div class="flex items-end gap-3 pointer-events-auto">
+                    <!-- Nút Icon Balo chuẩn ảnh người dùng yêu cầu -->
+                    <div id="hud-backpack-bar" class="hud-backpack-icon-box cursor-pointer group" onclick="window.uiManager.openBackpackModal()" title="Bấm để mở Balo & Túi Đồ [B / I]">
+                        <div class="mini-bar-icon-wrap">
+                            <img src="icon/bag.png" alt="Balo" class="w-10 h-10 object-contain drop-shadow group-hover:scale-110 transition-transform">
+                            <span class="hud-beige-badge" id="hud-bag-total-badge">0</span>
+                        </div>
+                        <div class="flex flex-col justify-center min-w-0 pr-1">
+                            <div class="font-quest font-bold text-base text-[#3b2512] leading-none flex items-center gap-1">
+                                <span id="lbl-inventory-title">Balo</span>
+                                <span class="text-[11px] text-[#7c6348] font-normal">[B]</span>
+                            </div>
+                            <div class="text-[11px] text-[#6b5037] font-quest mt-1 leading-tight truncate" id="hud-bag-preview-text">
+                                Mở túi [B]
+                            </div>
+                        </div>
+                        <button class="quest-image2-btn font-quest shrink-0 ml-1 py-1 px-2.5 text-xs" onclick="event.stopPropagation(); window.uiManager.openBackpackModal()" title="Mở túi đồ [B / I]">
+                            Mở túi
+                        </button>
+                    </div>
+
+                    <!-- Thanh Thiện Cảm Nhỏ Đồng Bộ Màu Be -->
+                    <div id="hud-affection-bar" class="hud-mini-bar affection-bar cursor-pointer group" onclick="window.uiManager.openWardrobeModal()" title="Bấm để mở Tủ Đồ & Cánh [C]">
+                        <div class="flex items-center gap-2.5 z-10 w-full min-w-0">
+                            <div class="mini-bar-icon-wrap">
+                                <img src="assets/ui/icons/heart_normal.png" data-normal="assets/ui/icons/heart_normal.png" data-active="assets/ui/icons/heart_active.png" alt="Thiện Cảm" class="interactive-icon w-9 h-9 object-contain drop-shadow group-hover:scale-110 transition-transform">
+                            </div>
+                            <div class="flex flex-col justify-center flex-1 min-w-0 pr-1">
+                                <div class="flex items-center justify-between font-quest leading-none mb-1">
+                                    <span class="font-bold text-base text-[#3b2512]" id="lbl-affection">Thiện cảm</span>
+                                    <span class="font-bold text-sm text-[#8c3b12]" id="hud-affection-text">0/100</span>
+                                </div>
+                                <div class="w-full bg-[#ebdcb4] h-2 rounded-full overflow-hidden border border-[#7c6348] mb-1">
+                                    <div class="h-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 rounded-full transition-all duration-500" id="hud-affection-bar-fill" style="width: 0%"></div>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] font-quest leading-none">
+                                    <span id="hud-affection-status" class="text-[#2d6a4f] font-bold">🔒 Cần 100 điểm</span>
+                                    <span class="text-[#6b5037] truncate max-w-[120px] flex items-center gap-1" id="hud-outfit-wing-summary">
+                                        <img src="assets/ui/icons/dress_normal.png" class="w-3.5 h-3.5 inline-block object-contain" alt="Trang phục" />
+                                        <span id="hud-outfit-name">Đồng Phục</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="quest-image2-btn font-quest shrink-0 ml-1" onclick="event.stopPropagation(); window.uiManager.openWardrobeModal()" title="Mở Tủ Đồ [C]">
+                                Tủ đồ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khay Thông Báo Nổi (Toast Notifications - Banner Hoàng Gia RPG 3 Mảnh) -->
+        <div id="toast-container" class="absolute top-[68px] left-1/2 -translate-x-1/2 z-50 flex flex-col items-center space-y-2 pointer-events-none"></div>
+
+        <!-- ========================================================
+             MODAL: KHỞI TẠO & ĐĂNG NHẬP NHÂN VẬT (CHARACTER SETUP MODAL)
+             Yêu cầu: Hiện ra trước khi vào web, đặt tên và chọn 1 trong 3 skin khởi đầu,
+             lưu dữ liệu trên trình duyệt (localStorage), không có cánh và không có pet.
+             ======================================================== -->
+        <div class="modal-overlay" id="character-setup-modal" style="z-index: 200;">
+            <div class="modal-box modal-box-beige w-[860px] max-w-[96vw] max-h-[96vh] flex flex-col font-quest shadow-2xl">
+                <!-- Modal Header -->
+                <div class="modal-header-beige flex items-center justify-between py-3 px-5">
+                    <div class="flex items-center space-x-3">
+                        <img class="interactive-icon w-9 h-9 object-contain drop-shadow" src="assets/ui/icons/graduate_normal.png" data-normal="assets/ui/icons/graduate_normal.png" data-active="assets/ui/icons/graduate_active.png" alt="Tân Sinh Viên" />
+                        <div>
+                            <h2 class="text-xl sm:text-2xl font-bold text-[#3b2512] font-quest leading-tight" id="char-setup-title">
+                                TNU: ĐÔI CÁNH ĐẠI NGÀN
+                            </h2>
+                            <p class="text-xs text-[#6b5037] font-quest">
+                                Thiết lập thông tin sinh viên & trang phục trước khi bước vào khuôn viên trường Đại Học Tây Nguyên
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Nút đóng nếu đã tạo nhân vật rồi và mở lại từ HUD -->
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" id="btn-close-char-modal" onclick="window.uiManager.closeCharacterSetupModal()" style="display: none;">&times;</button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4 sm:p-5 space-y-4 font-quest overflow-y-auto">
+                    <!-- PHẦN 1: THANH ĐẶT TÊN NHÂN VẬT -->
+                    <div class="bg-[#fffcf2] border-2 border-[#b89b72] rounded-2xl p-4 shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="input-character-name" class="font-bold text-sm sm:text-base text-[#3b2512] flex items-center gap-2">
+                                <span>🏷️</span> <span>Tên Nhân Vật / Sinh Viên:</span>
+                                <span class="text-rose-600 font-bold">*</span>
+                            </label>
+                            <button type="button" class="text-xs px-2.5 py-1 bg-[#eedbc0] hover:bg-[#ffe5a3] text-[#5c4033] border border-[#7c6348] rounded-lg font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95" id="btn-random-name" title="Gợi ý tên ngẫu nhiên">
+                                <span>🎲</span> <span>Gợi ý tên</span>
+                            </button>
+                        </div>
+                        
+                        <div class="relative">
+                            <input type="text" id="input-character-name" maxlength="20" placeholder="Nhập tên nhân vật của bạn (ví dụ: Cậu Mười Sữa Đá, Minh Tuấn...)" class="w-full py-2.5 px-4 pr-16 bg-[#fbf6d9] border-2 border-[#7c6348] focus:border-[#2d6a4f] rounded-xl text-[#3b2512] font-bold text-base outline-none shadow-inner transition-all placeholder:text-[#9c8265]" />
+                            <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#8c6d48]" id="char-name-counter">0/20</span>
+                        </div>
+                        <div class="text-[11px] text-[#7f5539] mt-1.5 flex items-center justify-between">
+                            <span>💡 Tên sẽ hiển thị trên đầu nhân vật và trong khung trò chuyện toàn trường.</span>
+                            <span class="text-emerald-700 font-bold" id="saved-character-hint" style="display: none;">💾 Đã tìm thấy dữ liệu từ trình duyệt!</span>
+                        </div>
+                    </div>
+
+                    <!-- PHẦN 2: CHỌN 1 TRONG 3 SKIN KHỞI ĐẦU -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2.5">
+                            <div class="font-bold text-sm sm:text-base text-[#3b2512] flex items-center gap-2">
+                                <span>👘</span> <span>Chọn Trang Phục Khởi Đầu:</span>
+                                <span class="bg-[#cbf0cb] text-[#123013] border border-[#557053] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">3 Skin Độc Quyền</span>
+                            </div>
+                            <span class="text-xs text-[#8c3b12] font-bold">🚫 Mới vào: Chưa có Cánh & Pet</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5" id="starter-skins-grid">
+                            <!-- Skin 1: Tiểu Hòa Thượng Thiếu Lâm -->
+                            <div class="starter-skin-card relative p-3 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center text-center font-quest shadow-md cursor-pointer select-none bg-[#fffcf2] border-[#b89b72] hover:border-[#8c6d48] hover:bg-[#faf5e4]" data-skin="skin_shaolin_monk" onclick="window.uiManager.selectStarterSkin('skin_shaolin_monk')">
+                                <span class="absolute top-2 left-2 bg-[#e0f2fe] text-[#0369a1] border border-[#38bdf8] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase shadow animate-pulse">⚡ 12 FRAMES 4 HƯỚNG</span>
+                                <div class="skin-selected-badge absolute top-2 right-2 bg-[#d8f3dc] text-[#1b4332] border border-[#52b788] font-bold text-[10px] px-2 py-0.5 rounded-full uppercase shadow" style="display: none;">✔ ĐÃ CHỌN</div>
+                                
+                                <div class="w-full flex justify-center my-1.5">
+                                    <canvas id="skin-preview-shaolin" width="120" height="90" class="rounded-xl shadow-inner border border-[#b89b72]"></canvas>
+                                </div>
+
+                                <div class="font-bold text-sm text-[#3b2512] mt-1 font-quest">Tiểu Hòa Thượng Thiếu Lâm</div>
+                                <div class="text-[11px] text-[#6b5037] leading-tight mt-1 mb-2 line-clamp-3 font-quest">
+                                    Đệ tử Thiếu Lâm Tự tinh anh với kiểu đầu 3 chỏm truyền thống, võ phục lam thắt đai hoàng kim uy vũ hoạt bát.
+                                </div>
+
+                                <div class="w-full mt-auto">
+                                    <button type="button" class="w-full py-1.5 quest-image2-btn font-quest text-xs font-bold btn-select-skin pointer-events-none">
+                                        <span>👔 Mặc Ngay</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Skin 2: Cậu Bé Robot Obocchaman -->
+                            <div class="starter-skin-card relative p-3 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center text-center font-quest shadow-md cursor-pointer select-none bg-[#fffcf2] border-[#b89b72] hover:border-[#8c6d48] hover:bg-[#faf5e4]" data-skin="skin_obocchaman" onclick="window.uiManager.selectStarterSkin('skin_obocchaman')">
+                                <span class="absolute top-2 left-2 bg-[#e0f2fe] text-[#0369a1] border border-[#38bdf8] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase shadow animate-pulse">⚡ 12 FRAMES 4 HƯỚNG</span>
+                                <div class="skin-selected-badge absolute top-2 right-2 bg-[#d8f3dc] text-[#1b4332] border border-[#52b788] font-bold text-[10px] px-2 py-0.5 rounded-full uppercase shadow" style="display: none;">✔ ĐÃ CHỌN</div>
+
+                                <div class="w-full flex justify-center my-1.5">
+                                    <canvas id="skin-preview-obocchaman" width="120" height="90" class="rounded-xl shadow-inner border border-[#b89b72]"></canvas>
+                                </div>
+
+                                <div class="font-bold text-sm text-[#3b2512] mt-1 font-quest">Cậu Bé Robot Obocchaman</div>
+                                <div class="text-[11px] text-[#6b5037] leading-tight mt-1 mb-2 line-clamp-3 font-quest">
+                                    Cậu bé robot lịch lãm Obocchaman với cặp kính tròn thông thái, áo sơ mi cà vạt đỏ và quần yếm xanh thanh lịch.
+                                </div>
+
+                                <div class="w-full mt-auto">
+                                    <button type="button" class="w-full py-1.5 quest-image2-btn font-quest text-xs font-bold btn-select-skin pointer-events-none">
+                                        <span>👔 Mặc Ngay</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Skin 3: Thiếu Nữ Thổ Cẩm Tóc Sừng -->
+                            <div class="starter-skin-card relative p-3 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center text-center font-quest shadow-md cursor-pointer select-none bg-[#fffcf2] border-[#b89b72] hover:border-[#8c6d48] hover:bg-[#faf5e4]" data-skin="skin_ethnic_maiden" onclick="window.uiManager.selectStarterSkin('skin_ethnic_maiden')">
+                                <span class="absolute top-2 left-2 bg-[#e0f2fe] text-[#0369a1] border border-[#38bdf8] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase shadow animate-pulse">⚡ 12 FRAMES 4 HƯỚNG</span>
+                                <div class="skin-selected-badge absolute top-2 right-2 bg-[#d8f3dc] text-[#1b4332] border border-[#52b788] font-bold text-[10px] px-2 py-0.5 rounded-full uppercase shadow" style="display: none;">✔ ĐÃ CHỌN</div>
+
+                                <div class="w-full flex justify-center my-1.5">
+                                    <canvas id="skin-preview-ethnic" width="120" height="90" class="rounded-xl shadow-inner border border-[#b89b72]"></canvas>
+                                </div>
+
+                                <div class="font-bold text-sm text-[#3b2512] mt-1 font-quest">Thiếu Nữ Thổ Cẩm Tóc Sừng</div>
+                                <div class="text-[11px] text-[#6b5037] leading-tight mt-1 mb-2 line-clamp-3 font-quest">
+                                    Bé gái dân tộc đáng yêu với mái tóc cột hai sừng tinh nghịch, diện váy thổ cẩm dệt hoa văn truyền thống Tây Nguyên độc đáo.
+                                </div>
+
+                                <div class="w-full mt-auto">
+                                    <button type="button" class="w-full py-1.5 quest-image2-btn font-quest text-xs font-bold btn-select-skin pointer-events-none">
+                                        <span>👔 Mặc Ngay</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NÚT XÁC NHẬN VÀO GAME -->
+                    <div class="pt-1">
+                        <button type="button" class="w-full py-3.5 px-6 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.99] text-white border-2 border-[#1e4620] rounded-xl text-base sm:text-lg font-bold font-quest shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer" id="btn-confirm-enter-game" onclick="window.uiManager.confirmCharacterSetup()">
+                            <img class="interactive-icon w-6 h-6 object-contain" src="assets/ui/icons/bus_normal.png" data-normal="assets/ui/icons/bus_normal.png" data-active="assets/ui/icons/bus_active.png" alt="Xe buýt" />
+                            <span id="txt-confirm-enter-btn">BƯỚC VÀO KHUÔN VIÊN TRƯỜNG</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL 1: HỘP THOẠI NPC (DIALOGUE MODAL)
+             CHUẨN PHONG CÁCH VINTAGE BEIGE ANIME COMIC
+             ======================================================== -->
+        <div class="modal-overlay" id="dialogue-modal">
+            <div class="modal-box modal-box-beige w-[560px] max-w-[95vw] overflow-hidden shadow-2xl font-quest">
+                <div class="modal-header-beige flex items-center justify-between">
+                    <div class="flex items-center space-x-2 font-quest text-lg font-bold text-[#3b2512]">
+                        <span class="text-xl">💬</span>
+                        <span id="dialogue-modal-header-title">TRÒ CHUYỆN & TƯƠNG TÁC</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()" title="Đóng [Esc]">&times;</button>
+                </div>
+                <div class="modal-body p-4 sm:p-5 space-y-3.5 font-quest">
+                    <!-- Khu vực Thông tin NPC: Avatar + Tên + Chức danh -->
+                    <div class="flex items-center gap-3.5 pb-2.5 border-b border-[#7c6348]/30">
+                        <div class="w-[72px] h-[72px] rounded-2xl bg-[#fffcf2] border-2 border-[#8c6d48] p-1 shadow-sm flex items-center justify-center shrink-0" id="dialogue-npc-avatar">
+                            🧑‍🎓
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-quest font-bold text-xl text-[#3b2512] leading-tight flex items-center gap-2 truncate" id="dialogue-npc-name">
+                                Tên NPC
+                            </div>
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#faeed0] border border-[#d4a373] text-[#8c3b12] text-xs font-bold font-quest mt-1 shadow-2xs truncate max-w-full" id="dialogue-npc-title">
+                                Chức vụ
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bong bóng Lời thoại NPC phong cách Comic Beige -->
+                    <div class="dialogue-speech-box" id="dialogue-npc-text">
+                        Lời thoại...
+                    </div>
+
+                    <!-- Danh sách các nút tương tác / tặng quà / nhiệm vụ -->
+                    <div class="flex flex-col space-y-2 pt-1" id="dialogue-actions">
+                        <!-- Render các nút hành động -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL 2: BÀN GÓI QUÀ (CRAFTING MODAL)
+             ======================================================== -->
+        <div class="modal-overlay" id="crafting-modal">
+            <div class="modal-box modal-box-beige w-[720px] max-w-[96vw] max-h-[96vh] flex flex-col font-quest">
+                <div class="modal-header-beige flex items-center justify-between">
+                    <div class="flex items-center space-x-2 font-quest text-xl font-bold text-[#3b2512]">
+                        <span class="text-2xl">🧺</span>
+                        <span id="crafting-modal-header-title">XƯỞNG GÓI QUÀ & CHẾ TẠO ẨM THỰC TNU</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()">&times;</button>
+                </div>
+                <div class="modal-body p-4 space-y-3 font-quest overflow-y-auto" id="crafting-modal-body-container">
+                    <div id="crafting-recipe-tabs"></div>
+                    <div id="crafting-recipe-banner"></div>
+                    <div>
+                        <div class="text-xs font-bold text-[#5c4731] uppercase tracking-wider mb-2">Nguyên Liệu Ghép Bắt Buộc:</div>
+                        <div class="space-y-2 max-h-[260px] overflow-y-auto pr-1" id="crafting-ingredients-list"></div>
+                    </div>
+                    <button class="btn-action-primary w-full py-3 flex items-center justify-center gap-2 font-bold text-sm" id="btn-craft-action">
+                        <span>CHẾ TẠO NGAY</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL 3: TỦ ĐỒ & 10 LOẠI CÁNH (WARDROBE MODAL KHUNG MÀU BE)
+             ======================================================== -->
+        <div class="modal-overlay" id="wardrobe-modal">
+            <div class="modal-box modal-box-beige w-[960px] max-w-[95vw]">
+                <div class="modal-header-beige">
+                    <div class="flex items-center space-x-2 font-quest text-xl font-bold text-[#3b2512]">
+                        <img class="interactive-icon w-8 h-8 object-contain inline-block drop-shadow" src="assets/ui/icons/dress_normal.png" data-normal="assets/ui/icons/dress_normal.png" data-active="assets/ui/icons/dress_active.png" alt="Tủ Đồ">
+                        <span>Tủ Đồ Thời Trang, Cánh Bay & Thú Cưng</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" title="Đóng">&times;</button>
+                </div>
+                <div class="modal-body p-4 space-y-3 font-quest">
+                    <div id="wardrobe-progress-banner">
+                        <!-- Render thanh điểm thiện cảm -->
+                    </div>
+
+                    <!-- 3 Tabs chuyển đổi phong cách vintage/comic -->
+                    <div class="flex items-center space-x-2 mb-3 border-b-2 border-[#7c6348]/40 pb-2.5">
+                        <button class="wardrobe-tab-btn active flex items-center gap-1.5" id="tab-btn-outfits" onclick="window.wardrobeManager.switchTab('outfits')">
+                            <img class="interactive-icon w-6 h-6 object-contain" src="assets/ui/icons/shirt_active.png" data-normal="assets/ui/icons/shirt_normal.png" data-active="assets/ui/icons/shirt_active.png" alt="Trang Phục" />
+                            <span id="tab-txt-outfits">Trang Phục</span>
+                        </button>
+                        <button class="wardrobe-tab-btn flex items-center gap-1.5" id="tab-btn-wings" onclick="window.wardrobeManager.switchTab('wings')">
+                            <img class="interactive-icon w-6 h-6 object-contain" src="assets/ui/icons/wing_normal.png" data-normal="assets/ui/icons/wing_normal.png" data-active="assets/ui/icons/wing_active.png" alt="Cánh Bay" />
+                            <span id="tab-txt-wings">Cánh Bay & Biến Thể</span>
+                        </button>
+                        <button class="wardrobe-tab-btn flex items-center gap-1.5" id="tab-btn-pets" onclick="window.wardrobeManager.switchTab('pets')">
+                            <img class="interactive-icon w-6 h-6 object-contain" src="assets/ui/icons/paw_normal.png" data-normal="assets/ui/icons/paw_normal.png" data-active="assets/ui/icons/paw_active.png" alt="Thú Cưng" />
+                            <span id="tab-txt-pets">Thú Cưng (Pet Frames)</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-4">
+                        <!-- Danh sách vật phẩm (Cột trái) -->
+                        <div class="col-span-8 max-h-[410px] overflow-y-auto pr-1">
+                            <div class="grid grid-cols-2 gap-3" id="wardrobe-items-grid">
+                                <!-- Render danh sách thẻ bài -->
+                            </div>
+                        </div>
+
+                        <!-- Live Preview Nhân vật 360 độ (Cột phải) -->
+                        <div class="col-span-4 bg-[#fffcf2] border-2 border-[#8c6d48] rounded-2xl p-3 flex flex-col items-center justify-between text-center shadow-md">
+                            <div class="text-xs uppercase font-bold tracking-wider text-[#8c3b12] font-quest">Live 3D Preview</div>
+                            <div class="relative w-full flex items-center justify-center my-2 bg-[#f8f3df] rounded-xl border border-[#b89b72]/60 p-1">
+                                <canvas id="wardrobe-character-preview" width="220" height="240" class="rounded-xl"></canvas>
+                            </div>
+                            <div class="w-full text-[11px] text-[#5c4731] bg-[#f4ecc4] p-2 rounded-xl border border-[#7c6348]/40 font-quest">
+                                💡 Nhân vật vỗ cánh theo vật lý thời gian thực quanh trục pivot!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL 4: MINIGAME GẮP THÚ BÔNG (CLAW MACHINE)
+             ======================================================== -->
+        <div class="modal-overlay" id="claw-machine-modal">
+            <div class="modal-box modal-box-beige w-[720px] max-w-[96vw] overflow-hidden shadow-2xl font-quest">
+                <div class="modal-header-beige flex items-center justify-between">
+                    <div class="flex items-center space-x-2 font-quest text-lg font-bold text-[#3b2512]">
+                        <span class="text-xl">🧸</span>
+                        <span>MÁY GẮP THÚ BÔNG TNU ARCADE</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()" title="Đóng [Esc]">&times;</button>
+                </div>
+                <div class="modal-body p-4 font-quest">
+                    <div class="minigame-container rounded-xl overflow-hidden border-2 border-[#8c6d48] bg-[#fdfbf7] p-2">
+                        <canvas id="claw-canvas" class="minigame-canvas w-full h-[360px] rounded-lg"></canvas>
+                        <div class="flex justify-between items-center mt-3 gap-2">
+                            <button class="px-5 py-2.5 bg-[#f3e9c6] hover:bg-[#faeed0] text-[#3b2512] border-2 border-[#8c6d48] rounded-xl text-xs font-bold transition-all shadow-xs" id="btn-claw-left">◀ Trái (A / ◄)</button>
+                            <button class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-black shadow-md border-2 border-[#8c4b12] transition-all" id="btn-claw-drop">⚡ HẠ CÀNG GẮP (Space / Enter)</button>
+                            <button class="px-5 py-2.5 bg-[#f3e9c6] hover:bg-[#faeed0] text-[#3b2512] border-2 border-[#8c6d48] rounded-xl text-xs font-bold transition-all shadow-xs" id="btn-claw-right">Phải (D / ►) ▶</button>
+                        </div>
+                        <p class="text-xs text-[#7c6348] font-bold text-center mt-2.5">
+                            💡 Thắng 3 lần liên tiếp để mở khóa <b>Cánh Lửa Phượng Hoàng</b>!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL 5: MINIGAME BẮN SÚNG HỘI CHỢ (SHOOTING GALLERY)
+             ======================================================== -->
+        <div class="modal-overlay" id="shooting-gallery-modal">
+            <div class="modal-box modal-box-beige w-[720px] max-w-[96vw] overflow-hidden shadow-2xl font-quest">
+                <div class="modal-header-beige flex items-center justify-between">
+                    <div class="flex items-center space-x-2 font-quest text-lg font-bold text-[#3b2512]">
+                        <span class="text-xl">🎯</span>
+                        <span>QUẦY BẮN SÚNG THIỆN XẠ HỘI CHỢ</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()" title="Đóng [Esc]">&times;</button>
+                </div>
+                <div class="modal-body p-4 font-quest">
+                    <div class="minigame-container rounded-xl overflow-hidden border-2 border-[#8c6d48] bg-[#fdfbf7] p-2">
+                        <canvas id="shooting-canvas" class="minigame-canvas w-full h-[360px] rounded-lg"></canvas>
+                        <p class="text-xs text-[#7c6348] font-bold text-center mt-2.5">
+                            💡 Di chuyển chuột để ngắm hồng tâm và <b>Click chuột trái</b> để bắn! Đạt từ <b>80 điểm</b> trở lên để mở khóa <b>Cánh Dơi Huyền Bí</b>!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL 6: CẨM NANG HƯỚNG DẪN KHÁM PHÁ TRƯỜNG ĐH TÂY NGUYÊN
+             ======================================================== -->
+        <div class="modal-overlay" id="help-modal">
+            <div class="modal-box modal-box-beige w-[720px] max-w-[96vw] max-h-[92vh] flex flex-col font-quest overflow-hidden shadow-2xl">
+                <div class="modal-header-beige flex items-center justify-between">
+                    <div class="flex items-center space-x-2 font-quest text-lg font-bold text-[#3b2512]">
+                        <span class="text-xl">📖</span>
+                        <span>CẨM NANG KHÁM PHÁ ĐẠI HỌC TÂY NGUYÊN</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeAllModals()" title="Đóng [Esc]">&times;</button>
+                </div>
+                <div class="modal-body p-4 sm:p-5 space-y-3.5 max-h-[480px] overflow-y-auto text-sm leading-relaxed text-[#3b2512] font-quest">
+                    <div class="p-3.5 bg-[#fffcf2] rounded-xl border-2 border-[#8c6d48] shadow-sm">
+                        <div class="font-bold text-[#8c3b12] text-sm mb-1.5 flex items-center gap-1.5"><span>🎮</span> <span>Điều Khiển:</span></div>
+                        <div>• Bàn phím: <b>W / A / S / D</b> hoặc <b>Phím Mũi Tên</b> di chuyển.</div>
+                        <div>• Cảm ứng: Cần điều khiển ảo <b>Virtual Touch Joystick</b> ở góc dưới bên trái!</div>
+                        <div>• Phím <b>[E]</b> hoặc <b>[Space]</b>: Tương tác NPC, hái hoa, nhặt đồ án, chơi game.</div>
+                        <div>• Phím <b>[C]</b>: Mở Tủ Đồ & 10 Loại Cánh. Phím <b>[G]</b>: Mở Bàn Gói Hoa.</div>
+                    </div>
+
+                    <div class="p-3.5 bg-[#fffcf2] rounded-xl border-2 border-[#8c6d48] shadow-sm">
+                        <div class="font-bold text-[#8c3b12] text-sm mb-1.5 flex items-center gap-1.5"><span>🏛️</span> <span>Kiến Trúc & Cảnh Quan Thực Tế:</span></div>
+                        <div>• <b>Cổng chính 567 Lê Duẩn (QL14):</b> Lối vào chính với bốt bảo vệ.</div>
+                        <div>• <b>Tòa nhà Hiệu Bộ (7 Tầng):</b> Nơi Thầy Hiệu Trưởng làm việc, có bồn hoa tròn chữ 3D <b>I ❤️ TAY NGUYEN UNIVERSITY</b>!</div>
+                        <div>• <b>Hồ Nước Sinh Thái:</b> Nằm uốn lượn bên cạnh Thư viện Nhà 7 và Nhà số 8, có cầu gỗ và chòi bát giác ngắm cảnh.</div>
+                        <div>• <b>Nhà 2 (Nông Lâm & Y Dược):</b> Nơi nghiên cứu và giảng dạy y dược, nông lâm.</div>
+                        <div>• <b>Sân Vận Động TNU:</b> Sân bóng đá tiêu chuẩn có đường pitch điền kinh màu cam đỏ bao quanh hình bầu dục.</div>
+                        <div>• <b>Khu KTX:</b> KTX Lào & Campuchia, KTX Nam, KTX Nữ & Căn tin, Trung tâm GDQP-AN.</div>
+                    </div>
+
+                    <div class="p-3.5 bg-[#fffcf2] rounded-xl border-2 border-[#8c6d48] shadow-sm">
+                        <div class="font-bold text-[#8c3b12] text-sm mb-1.5 flex items-center gap-1.5"><span>🪽</span> <span>Cách Mở Khóa 10 Loại Cánh:</span></div>
+                        <div>1. <b>Cánh Tiên:</b> Hái 10 Hoa Hồng tại Vườn hoa sinh thái.</div>
+                        <div>2. <b>Cánh Thiên Thần:</b> Đạt 100 Điểm Thiện Cảm với Thầy Cô.</div>
+                        <div>3. <b>Cánh Dơi:</b> Đạt 80+ điểm tại Quầy Bắn Súng.</div>
+                        <div>4. <b>Cánh Bướm:</b> Hái được đóa Hoa Hồng Trắng quý hiếm.</div>
+                        <div>5. <b>Cánh Lá Non:</b> Thăm quan Nhà số 2 - Khoa Nông Lâm.</div>
+                        <div>6. <b>Cánh Mây:</b> Dạo bước qua Cầu Gỗ Hồ Nước Sinh Thái & Thư viện.</div>
+                        <div>7. <b>Cánh Lửa:</b> Thắng 3 lượt liên tiếp tại Máy Gắp Thú.</div>
+                        <div>8. <b>Cánh Băng:</b> Giúp SV K45 hoàn thành Đồ Án Tốt Nghiệp.</div>
+                        <div>9. <b>Cánh Sao Băng:</b> Chạy hoàn thành 1 vòng Sân Vận Động TNU.</div>
+                        <div>10. <b>Cánh Rồng:</b> Hoàn thành mọi nhiệm vụ học đường & 100 điểm thiện cảm!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL 7: BALO & HÀNH TRANG SINH VIÊN (BACKPACK MODAL KHUNG MÀU BE)
+             ======================================================== -->
+        <div class="modal-overlay" id="backpack-modal">
+            <div class="modal-box modal-box-beige w-[680px] max-w-[95vw]">
+                <div class="modal-header-beige">
+                    <div class="flex items-center space-x-2 font-quest text-xl font-bold text-[#3b2512]">
+                        <img src="icon/bag.png" class="w-8 h-8 object-contain inline-block drop-shadow">
+                        <span>Balo & Túi Đồ Sinh Viên TNU</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" title="Đóng">&times;</button>
+                </div>
+                <div class="modal-body p-4 space-y-3 font-quest">
+                    <div class="flex items-center justify-between text-xs text-[#5c4731] font-bold px-1">
+                        <span>📦 Danh sách vật phẩm đang có trong hành trang:</span>
+                        <span id="backpack-total-items-text" class="text-[#1e4620] bg-[#cbf0cb] border border-[#557053] px-2.5 py-0.5 rounded-full font-bold">Tổng: 0 món</span>
+                    </div>
+                    <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-7 gap-2 max-h-[380px] overflow-y-auto p-1" id="backpack-items-grid">
+                        <!-- Render 5 item cards với hình ảnh, số lượng và tooltip chi tiết -->
+                    </div>
+                    <div class="p-3 bg-[#f3e9c6] rounded-xl border border-[#7c6348] flex items-center justify-between text-xs text-[#4a3520]">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">💡</span>
+                            <span>Thu thập đủ nguyên liệu để ghé <b>Bàn Gói Hoa</b> tạo thành Bó Hoa Hồng Đại Học Tây Nguyên dâng tặng Thầy Cô!</span>
+                        </div>
+                        <button class="quest-image2-btn font-quest shrink-0 ml-3 text-sm py-1.5 px-3" onclick="window.uiManager.closeAllModals(); window.uiManager.openCraftingModal();">
+                            💐 Gói Quà [G]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL: BẢNG NHIỆM VỤ SINH VIÊN TNU (QUEST SELECTION MODAL)
+             ======================================================== -->
+        <div class="modal-overlay" id="quest-modal">
+            <div class="modal-box modal-box-beige w-[740px] max-w-[95vw] max-h-[92vh] flex flex-col font-quest">
+                <div class="modal-header-beige flex items-center justify-between">
+                    <div class="flex items-center space-x-2 font-quest text-xl font-bold text-[#3b2512]">
+                        <img src="assets/ui/icons/scroll_normal.png" class="w-7 h-7 object-contain drop-shadow" alt="Nhiệm vụ" />
+                        <span>Bảng Nhiệm Vụ Sinh Viên TNU</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.uiManager.closeQuestModal()" title="Đóng">&times;</button>
+                </div>
+                <div class="modal-body p-4 space-y-3 font-quest overflow-y-auto">
+                    <div class="flex items-center justify-between text-xs text-[#5c4731] font-bold px-1">
+                        <span class="flex items-center gap-1.5">
+                            <img src="assets/ui/icons/scroll_normal.png" class="w-4 h-4 object-contain inline-block" alt="Nhiệm vụ" />
+                            <span>Danh sách tất cả nhiệm vụ học đường & hoạt động:</span>
+                        </span>
+                        <span id="quest-modal-stats-text" class="text-[#1e4620] bg-[#cbf0cb] border border-[#557053] px-2.5 py-0.5 rounded-full font-bold">7 nhiệm vụ</span>
+                    </div>
+
+                    <!-- Danh sách các thẻ nhiệm vụ -->
+                    <div class="space-y-2.5 max-h-[440px] overflow-y-auto pr-1" id="quest-cards-list">
+                        <!-- Render dynamic quest cards -->
+                    </div>
+
+                    <div class="p-3 bg-[#f3e9c6] rounded-xl border border-[#7c6348] flex items-center justify-between text-xs text-[#4a3520]">
+                        <div class="flex items-center gap-2">
+                            <img src="assets/ui/icons/help_normal.png" class="w-5 h-5 object-contain shrink-0" alt="Gợi ý" />
+                            <span>Nhấn <b>"Chọn làm"</b> để chuyển hướng dẫn đường và theo dõi nhiệm vụ bạn muốn thực hiện!</span>
+                        </div>
+                        <button class="quest-image2-btn font-quest shrink-0 ml-3 text-xs py-1.5 px-3 flex items-center gap-1" onclick="window.uiManager.goToQuest(); window.uiManager.closeQuestModal();">
+                            <img src="assets/ui/icons/compass_normal.png" class="w-3.5 h-3.5 object-contain inline-block shrink-0" alt="La bàn" />
+                            <span>Đi tới mục tiêu [Q]</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="game-board-modal">
+            <div class="modal-box modal-box-beige w-[800px] max-w-[96vw] max-h-[96vh] flex flex-col">
+                <div class="modal-header-beige flex items-center justify-between py-2 px-4">
+                    <div class="flex items-center space-x-2.5 font-quest text-lg sm:text-xl font-bold text-[#3b2512]">
+                        <span id="game-board-icon" class="text-2xl">🎮</span>
+                        <span id="game-board-title">BẢNG TRÒ CHƠI HỘI CHỢ</span>
+                    </div>
+                    <button class="quest-modal-close-btn modal-close-btn font-quest" onclick="window.gameZoneManager.closeGameBoard()" title="Đóng bảng game">&times;</button>
+                </div>
+                <div class="modal-body p-3 sm:p-4 space-y-2.5 font-quest flex flex-col items-center">
+                    <div class="w-full bg-[#f3e9c6] rounded-xl border border-[#7c6348] p-2.5 sm:px-3.5 shadow-sm flex flex-col gap-1.5">
+                        <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs">
+                            <div class="flex items-center gap-2 font-bold text-[#2b1704]">
+                                <span class="text-base">🕹️</span>
+                                <span id="game-board-desc" class="leading-snug">Chơi đạt điểm mục tiêu để nhận thưởng trực tiếp vào túi đồ!</span>
+                            </div>
+                            <div class="text-[11px] text-[#2d6a4f] font-semibold bg-[#e8f5e9] px-2.5 py-0.5 rounded-full border border-[#a3b18a] shrink-0">
+                                ✨ Quà tự động lưu vĩnh viễn vào Balo
+                            </div>
+                        </div>
+                        <div id="game-board-rewards-preview" class="flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto py-0.5 w-full"></div>
+                    </div>
+                    <div class="relative w-[640px] max-w-full aspect-[4/3] max-h-[58vh] bg-[#11111b] rounded-xl overflow-hidden border-2 border-[#5c4731] shadow-inner flex items-center justify-center">
+                        <canvas id="game-board-canvas" width="640" height="480" class="block w-full h-full object-contain"></canvas>
+                    </div>
+                    <div id="game-board-custom-controls" class="w-full flex items-center justify-center gap-2 py-1"></div>
+                    <div class="w-full flex items-center justify-between pt-1">
+                        <div class="flex items-center gap-2">
+                            <button class="quest-image2-btn font-quest text-xs font-bold py-1.5 px-3 flex items-center gap-1.5 shadow-sm transform active:scale-95" onclick="window.gameZoneManager.restartCurrentGame()">
+                                <span>🔄</span> <span>Chơi Lại Ván Mới</span>
+                            </button>
+                            <button class="px-3 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] active:bg-[#faedcd] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-sm flex items-center gap-1.5" onclick="window.uiManager.openBackpackModal()">
+                                <span>🎒</span> <span>Xem Balo Kho Đồ [B]</span>
+                            </button>
+                        </div>
+                        <button class="px-4 py-1.5 bg-[#e76f51] hover:bg-[#f4a261] text-white border-2 border-[#9d0208] rounded-xl text-xs font-bold font-quest transition-all shadow-sm" onclick="window.gameZoneManager.closeGameBoard()">
+                            <span>❌ Đóng Bảng Game</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================
+             MODAL BẢN ĐỒ TOÀN CẢNH ĐẠI HỌC TÂY NGUYÊN (FULL MAP MODAL)
+             ======================================================== -->
+        <div id="modal-large-campus-map" class="fixed inset-0 bg-black/75 backdrop-blur-xs hidden items-center justify-center z-50 p-4 select-none">
+            <div class="bg-[#fbf6d9] border-4 border-[#3c2a1e] rounded-2xl w-[960px] max-w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-scale-up">
+                <!-- Modal Header Ribbon -->
+                <div class="bg-[#fedc82] border-b-2 border-[#3c2a1e] px-5 py-2.5 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">🗺️</span>
+                        <h2 class="font-quest font-bold text-sm sm:text-base text-[#3c2a1e]">BẢN ĐỒ TOÀN CẢNH KHUÔN VIÊN ĐẠI HỌC TÂY NGUYÊN (TNU)</h2>
+                        <span class="px-2 py-0.5 bg-[#fbf6e0] border border-[#3c2a1e] rounded-full text-xs font-bold text-[#3c2a1e]">2560 × 3432</span>
+                    </div>
+                    <button id="btn-close-large-map" class="w-8 h-8 rounded-full bg-[#fbf6e0] hover:bg-red-500 hover:text-white border-2 border-[#3c2a1e] flex items-center justify-center font-bold text-sm text-[#3c2a1e] transition-colors cursor-pointer">✕</button>
+                </div>
+
+                <!-- Modal Body: Bản đồ + Danh sách địa điểm -->
+                <div class="p-3 sm:p-4 flex flex-col md:flex-row gap-3 sm:gap-4 overflow-hidden flex-1">
+                    <!-- Khung Canvas Bản Đồ Lớn -->
+                    <div class="flex-1 bg-[#1b263b] rounded-xl border-2 border-[#5c4731] overflow-auto flex items-center justify-center relative shadow-inner p-2">
+                        <canvas id="large-map-canvas" width="600" height="804" class="max-h-[68vh] object-contain shadow-lg rounded-lg cursor-pointer" title="Bấm vào vị trí bất kỳ trên bản đồ để dịch chuyển tức thời"></canvas>
+                    </div>
+
+                    <!-- Danh mục địa danh & Dịch chuyển nhanh -->
+                    <div class="w-full md:w-72 flex flex-col bg-[#faeed0] p-3 rounded-xl border-2 border-[#5c4731] overflow-hidden">
+                        <div class="font-quest font-bold text-xs text-[#3c2a1e] mb-2 flex items-center justify-between">
+                            <span>📍 ĐỊA ĐIỂM TRỌNG ĐIỂM</span>
+                            <span class="text-[10px] text-[#6b5037]">Bấm để dịch chuyển</span>
+                        </div>
+                        <div class="overflow-y-auto space-y-1.5 flex-1 pr-1 custom-scrollbar" id="large-map-locations-list">
+                            <!-- Danh sách địa danh nạp từ minimap.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL 1: BỨC THƯ TRI ÂN THẦY CÔ NGÀY 20/11 -->
+        <!-- ========================================== -->
+        <div id="modal-teacher-letter" class="fixed inset-0 bg-black/75 backdrop-blur-xs hidden items-center justify-center z-50 p-4 select-none">
+            <div class="bg-[#fbf4dd] border-4 border-[#5c4033] rounded-2xl w-[640px] max-w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-scale-up relative">
+                <!-- Ribbon Header Cổ Điển -->
+                <div class="bg-gradient-to-r from-[#d90429] via-[#ef233c] to-[#d90429] border-b-2 border-[#5c4033] px-5 py-3 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl filter drop-shadow">💌</span>
+                        <div>
+                            <h2 class="font-quest font-bold text-base sm:text-lg text-white drop-shadow tracking-wide">THƯ TRI ÂN QUÝ THẦY CÔ GIÁO</h2>
+                            <p class="text-[11px] text-amber-100 font-sans">Kỷ niệm Ngày Nhà Giáo Việt Nam 20/11 • Đại học Tây Nguyên</p>
+                        </div>
+                    </div>
+                    <button onclick="if(window.wishingManager) window.wishingManager.closeModals()" class="w-8 h-8 rounded-full bg-[#fbf4dd] hover:bg-white text-[#5c4033] font-bold text-lg flex items-center justify-center border border-[#5c4033] shadow transition-all cursor-pointer">✕</button>
+                </div>
+
+                <!-- Thân Bức Thư Giấy Cổ Điển -->
+                <div class="p-5 sm:p-6 overflow-y-auto space-y-4 font-sans text-sm text-[#3c2a1e] leading-relaxed bg-[#fbf4dd]" style="background-image: radial-gradient(#e9dac1 1px, transparent 0); background-size: 16px 16px;">
+                    <!-- Dấu Triện & Tiêu Đề Phụ -->
+                    <div class="flex items-center justify-between border-b border-[#d8c29d] pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded bg-[#eedbc0] border border-[#bfa588] text-xs font-bold text-[#6b4226]">Tây Nguyên, tháng 11/2026</span>
+                            <span class="text-xs text-[#8c6d48] font-medium">Khoa Công Nghệ Thông Tin</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-[#d90429] text-white flex items-center justify-center font-bold text-xs shadow border-2 border-[#ffd166]">
+                            TNU
+                        </div>
+                    </div>
+
+                    <!-- Kính Gửi -->
+                    <div class="font-bold text-[#800f2f] text-base font-quest">
+                        Kính gửi: Quý Thầy Cô giáo Trường Đại học Tây Nguyên thân yêu,
+                    </div>
+
+                    <!-- Nội Dung Tri Ân Sâu Sắc -->
+                    <p class="text-justify indent-6">
+                        Khi cơn gió đầu đông se lạnh tràn về trên cao nguyên bazan bạt ngàn sắc dã quỳ rực rỡ, cũng là lúc chúng em bồi hồi hướng lòng mình về ngày <strong class="text-[#d90429]">20/11 - Ngày Hiến chương Nhà giáo Việt Nam</strong>. Dưới bóng mát của hàng cây cổ thụ và khuôn viên thân thương của Đại học Tây Nguyên, từng giảng đường, phòng lab, từng góc sân trường đều in hằn những giọt mồ hôi và tâm huyết bao la của Thầy Cô.
+                    </p>
+
+                    <p class="text-justify indent-6">
+                        Chúng em xin gửi lời tri ân sâu sắc nhất tới <strong class="text-[#800f2f]">ThS. Nguyễn Quốc Cường, ThS. Nguyễn Đức Thắng, TS. Nguyễn Thị Như, ThS. Nguyễn Văn Quốc Tuấn, ThS. Phan Đình Long</strong> cùng toàn thể Quý Thầy Cô trong Khoa Công nghệ Thông tin và các Khoa phòng trường Đại học Tây Nguyên. Cảm ơn Thầy Cô đã không quản ngày đêm tận tụy chỉ dạy từng dòng code, kiên nhẫn hướng dẫn đồ án tốt nghiệp, khơi gợi niềm đam mê công nghệ và trao cho chúng em đôi cánh tri thức vững vàng bước vào tương lai.
+                    </p>
+
+                    <p class="text-justify indent-6">
+                        Hành trang quý báu nhất mà chúng em mang theo suốt cuộc đời không chỉ là kiến thức chuyên môn, mà còn là nhân cách sống, tinh thần cống hiến và tình yêu thương bao la từ Thầy Cô. Kính chúc Quý Thầy Cô luôn dồi dào sức khỏe, ngập tràn niềm vui, gia đình hạnh phúc và mãi là người thuyền trưởng nhiệt huyết chèo lái những chuyến đò tri thức cập bến vinh quang!
+                    </p>
+
+                    <!-- Chữ Ký Tập Thể -->
+                    <div class="text-right pt-2 border-t border-[#d8c29d]">
+                        <p class="italic text-xs text-[#6b4226]">Mãi khắc ghi công ơn dạy dỗ,</p>
+                        <p class="font-bold text-sm text-[#800f2f] font-quest mt-1">Tập thể Sinh viên Khóa K45 & Toàn thể Học viên TNU ❤️</p>
+                    </div>
+
+                    <!-- Nút Tương Tác Trong Thư -->
+                    <div class="pt-3 flex flex-wrap items-center justify-center gap-3">
+                        <button id="btn-letter-send-heart" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#ff4d6d] to-[#c9184a] text-white font-bold text-xs sm:text-sm shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer">
+                            <span>❤️</span> Thả Tim Tri Ân (+10 Thiện cảm)
+                        </button>
+                        <button id="btn-letter-send-flower" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#ffb703] to-[#fb8500] text-[#3c2a1e] font-bold text-xs sm:text-sm shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer">
+                            <span>💐</span> Dâng Hoa Thắm Lên Thầy Cô
+                        </button>
+                        <button onclick="if(window.wishingManager) { window.wishingManager.closeModals(); window.wishingManager.openWishingBoardModal(); }" class="px-4 py-2 rounded-xl bg-[#eedbc0] hover:bg-[#ffe5a3] text-[#5c4033] font-bold text-xs sm:text-sm border border-[#5c4033] shadow active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer">
+                            <span>📋</span> Đến Bảng Ước Nguyện Xem & Gửi Lời Chúc
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL 2: BẢNG ƯỚC NGUYỆN TRI ÂN THẦY CÔ 20/11 -->
+        <!-- ========================================== -->
+        <div id="modal-wishing-board" class="fixed inset-0 bg-black/75 backdrop-blur-xs hidden items-center justify-center z-50 p-4 select-none">
+            <div class="bg-[#fbf4dd] border-4 border-[#5c4033] rounded-2xl w-[920px] max-w-full max-h-[94vh] flex flex-col shadow-2xl overflow-hidden animate-scale-up">
+                <!-- Ribbon Header Bảng Ước Nguyện -->
+                <div class="bg-gradient-to-r from-[#e76f51] via-[#f4a261] to-[#e76f51] border-b-2 border-[#5c4033] px-5 py-3 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl">📋</span>
+                        <div>
+                            <h2 class="font-quest font-bold text-base sm:text-lg text-white drop-shadow tracking-wide">BẢNG ƯỚC NGUYỆN TRI ÂN THẦY CÔ • 20/11</h2>
+                            <p class="text-[11px] text-amber-100 font-sans">Nơi lưu giữ ngàn lời chúc & tình cảm trân quý của học sinh, sinh viên Đại học Tây Nguyên</p>
+                        </div>
+                    </div>
+                    <button onclick="if(window.wishingManager) window.wishingManager.closeModals()" class="w-8 h-8 rounded-full bg-[#fbf4dd] hover:bg-white text-[#5c4033] font-bold text-lg flex items-center justify-center border border-[#5c4033] shadow transition-all cursor-pointer">✕</button>
+                </div>
+
+                <!-- Thân Bảng: Cột Trái Form Gửi - Cột Phải Danh Sách Thiệp Ghim -->
+                <div class="p-4 sm:p-5 flex-1 overflow-y-auto flex flex-col md:flex-row gap-4 bg-[#fbf4dd]" style="background-image: radial-gradient(#e2ceb0 1.2px, transparent 0); background-size: 20px 20px;">
+                    <!-- Cột Trái: Form Viết Lời Chúc Mới -->
+                    <div class="w-full md:w-[280px] shrink-0 bg-[#fff9ea] border-2 border-[#8b5a2b] rounded-xl p-4 flex flex-col gap-3 shadow-md h-fit">
+                        <div class="flex items-center gap-2 border-b border-[#dec79e] pb-2">
+                            <span class="text-lg">✍️</span>
+                            <span class="font-quest font-bold text-sm text-[#5c4033]">GỬI LỜI CHÚC MỚI</span>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-[#6b4226] mb-1">Tên của bạn / Chi đoàn:</label>
+                            <input id="input-wish-author" type="text" placeholder="VD: Hoàng Long (K45 CNTT)" class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-[#bfa588] text-xs text-[#3c2a1e] focus:outline-none focus:ring-2 focus:ring-[#e76f51]" maxlength="40" />
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-[#6b4226] mb-1">Kính gửi Thầy / Cô:</label>
+                            <select id="select-wish-target" class="w-full px-2 py-1.5 rounded-lg bg-white border border-[#bfa588] text-xs text-[#3c2a1e] focus:outline-none focus:ring-2 focus:ring-[#e76f51] cursor-pointer">
+                                <option value="ThS. Nguyễn Quốc Cường">ThS. Nguyễn Quốc Cường (CNTT)</option>
+                                <option value="TS. Nguyễn Thị Như">TS. Nguyễn Thị Như (KTPM)</option>
+                                <option value="ThS. Nguyễn Đức Thắng">ThS. Nguyễn Đức Thắng (KHMT)</option>
+                                <option value="ThS. Nguyễn Văn Quốc Tuấn">ThS. Nguyễn Văn Quốc Tuấn (CNTT)</option>
+                                <option value="ThS. Phan Đình Long">ThS. Phan Đình Long (CNTT)</option>
+                                <option value="Toàn thể Giảng viên TNU" selected>Toàn thể Quý Thầy Cô Đại học Tây Nguyên</option>
+                                <option value="Khoa Nông Lâm Nghiệp">Quý Thầy Cô Khoa Nông Lâm Nghiệp</option>
+                                <option value="Khoa Y Dược">Quý Thầy Cô Khoa Y Dược</option>
+                                <option value="Khoa Kinh Tế">Quý Thầy Cô Khoa Kinh Tế</option>
+                                <option value="Khoa Sư Phạm">Quý Thầy Cô Khoa Sư Phạm</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-[#6b4226] mb-1">Lời chúc tri ân:</label>
+                            <textarea id="input-wish-content" rows="4" placeholder="Viết những dòng tâm sự, lời chúc sức khỏe, tri ân chân thành nhất..." class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-[#bfa588] text-xs text-[#3c2a1e] focus:outline-none focus:ring-2 focus:ring-[#e76f51] resize-none" maxlength="300"></textarea>
+                        </div>
+
+                        <button id="btn-submit-new-wish" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#2a9d8f] to-[#264653] hover:from-[#21867a] hover:to-[#1a333d] text-white font-quest font-bold text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>📌</span> Ghim Lên Bảng Ước Nguyện
+                        </button>
+                        <p class="text-[10px] text-center text-[#8c6d48] italic">Mỗi lời chúc nhận ngay +10 Điểm Thiện cảm!</p>
+                    </div>
+
+                    <!-- Cột Phải: Lưới Thiệp Chúc Mừng (Sticky Notes) -->
+                    <div class="flex-1 min-w-0 flex flex-col gap-2">
+                        <div class="flex items-center justify-between px-1">
+                            <span class="text-xs font-bold text-[#6b4226] flex items-center gap-1.5">
+                                <span>💌</span> Danh sách lời chúc học sinh, sinh viên gửi Thầy Cô:
+                            </span>
+                            <span class="text-[11px] text-[#8c6d48]">Nhấn ❤️ để thả tim lời chúc</span>
+                        </div>
+
+                        <!-- Sticky Notes Grid Container -->
+                        <div id="wishing-board-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[480px] overflow-y-auto p-1">
+                            <!-- Được render động bởi wishingManager.renderWishesList() -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================================
+         SCRIPTS: VENDOR LIBRARIES & GAME ENGINES
+         ======================================================== -->
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/nipplejs.min.js"></script>
+    <script src="vendor/confetti.min.js"></script>
+
+    <!-- GAME SCRIPTS THEO ĐÚNG THỨ TỰ ARCHITECTURE -->
+    <script src="js/i18n.js?v=20261117_2"></script>
+    <script src="js/state.js?v=20261117_2"></script>
+    <script src="js/audio.js?v=20261117_2"></script>
+    <script src="js/maps.js?v=20261117_2"></script>
+    <script src="js/wing_db.js?v=20261117_2"></script>
+    <script src="js/pet_db.js?v=20261117_2"></script>
+    <script src="js/head_db.js?v=20261117_2"></script>
+    <script src="js/body_db.js?v=20261117_2"></script>
+    <script src="js/npc_db.js?v=20261117_2"></script>
+    <script src="js/entities.js?v=20261117_2"></script>
+    <script src="js/minigames.js?v=20261117_2"></script>
+    <script src="js/crafting.js?v=20261117_2"></script>
+    <script src="js/wardrobe.js?v=20261117_2"></script>
+    <script src="js/ui.js?v=20261117_2"></script>
+    <script src="js/lanterns.js?v=20261117_2"></script>
+    <script src="js/minimap.js?v=20261117_2"></script>
+    <script src="js/wishing_tree.js?v=20261117_2"></script>
+    <script src="js/network.js?v=20261117_2"></script>
+    <script src="js/game.js?v=20261117_2"></script>
+    <script src="js/rose_garden.js?v=20261117_2"></script>
+    <script src="js/game_zone.js?v=20261117_2"></script>
+
+    <script>
+        function startTNUGame() {
+            if (window.__tnuGameStarted) return;
+            window.__tnuGameStarted = true;
+
+            // Khởi tạo Game State & UI
+            try {
+                if (window.uiManager) {
+                    window.uiManager.init();
+                }
+            } catch (err) {
+                console.error('Lỗi khởi tạo UIManager:', err);
+            }
+
+            // Khởi tạo Game Engine
+            try {
+                if (window.GameEngine) {
+                    window.gameInstance = new GameEngine();
+                    window.gameInstance.init();
+                }
+            } catch (err) {
+                console.error('Lỗi khởi tạo GameEngine:', err);
+            }
+
+            // Nút Bật / Tắt âm thanh & điều chỉnh âm lượng
+            const soundBtn = document.getElementById('btn-toggle-sound');
+            const soundIconImg = document.getElementById('sound-icon-img');
+            if (soundBtn && window.soundSystem) {
+                soundBtn.onclick = () => {
+                    window.soundSystem.init();
+                    const isMuted = window.soundSystem.toggleMute();
+                    if (soundIconImg) {
+                        soundIconImg.src = isMuted ? 'assets/ui/icons/sound_muted.png' : 'assets/ui/icons/sound_normal.png';
+                        soundIconImg.classList.add('icon-pop-spring');
+                        setTimeout(() => soundIconImg.classList.remove('icon-pop-spring'), 450);
+                    }
+                };
+
+                // Lăn chuột trên nút âm thanh để tăng / giảm âm lượng mượt mà
+                soundBtn.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    if (!window.soundSystem) return;
+                    window.soundSystem.init();
+                    let currentVol = window.soundSystem.bgmVolume;
+                    currentVol += (e.deltaY < 0 ? 0.05 : -0.05);
+                    currentVol = Math.max(0.05, Math.min(1.0, currentVol));
+                    window.soundSystem.setVolume(currentVol);
+                    const percent = Math.round(currentVol * 100);
+                    if (window.soundSystem.isMuted) {
+                        window.soundSystem.toggleMute();
+                    }
+                    if (window.uiManager && typeof window.uiManager.showToast === 'function') {
+                        window.uiManager.showToast(`🔊 Âm lượng nhạc nền: ${percent}%`, 'info');
+                    }
+                    soundBtn.title = `Tắt Âm Thanh (Đang phát - Âm lượng ${percent}%) - Cuộn chuột để chỉnh`;
+                }, { passive: false });
+            }
+
+            // Nút mở Bàn gói hoa
+            const craftHudBtn = document.getElementById('btn-open-crafting-hud');
+            if (craftHudBtn) {
+                craftHudBtn.onclick = () => window.uiManager.openCraftingModal();
+            }
+
+            // Nút mở Tủ đồ & 10 Cánh
+            const wardrobeHudBtn = document.getElementById('btn-open-wardrobe-hud');
+            if (wardrobeHudBtn) {
+                wardrobeHudBtn.onclick = () => window.uiManager.openWardrobeModal();
+            }
+
+            // Nút mở Hướng dẫn
+            const helpBtn = document.getElementById('btn-open-help');
+            const helpModal = document.getElementById('help-modal');
+            if (helpBtn && helpModal) {
+                helpBtn.onclick = () => window.uiManager.openModal(helpModal);
+            }
+
+            // Nút Minigame Gắp Thú
+            const btnLeft = document.getElementById('btn-claw-left');
+            const btnRight = document.getElementById('btn-claw-right');
+            const btnDrop = document.getElementById('btn-claw-drop');
+            if (btnLeft) btnLeft.onclick = () => { if (window.clawGameInstance) window.clawGameInstance.moveLeft(); };
+            if (btnRight) btnRight.onclick = () => { if (window.clawGameInstance) window.clawGameInstance.moveRight(); };
+            if (btnDrop) btnDrop.onclick = () => { if (window.clawGameInstance) window.clawGameInstance.triggerDrop(); };
+
+            // Thông báo chào mừng nếu đã vào game
+            if (window.useGameStore && window.useGameStore.state.progression.is_character_created) {
+                setTimeout(() => {
+                    const name = window.useGameStore.state.progression.ten_nhan_vat || '';
+                    if (window.uiManager) {
+                        window.uiManager.showToast(`Chào mừng bạn ${name ? '[' + name + '] ' : ''}quay trở lại TNU: Đôi Cánh Đại Ngàn!`, 'info');
+                    }
+                }, 800);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startTNUGame);
+        } else {
+            startTNUGame();
+        }
+    </script>
+</body>
+</html>

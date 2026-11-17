@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌹 Vườn Hoa Hồng ĐH Tây Nguyên - Hand-Drawn Rose Garden Studio</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tnu: {
+                            blue: '#1d3557',
+                            lightBlue: '#457b9d',
+                            green: '#2d6a4f',
+                            red: '#e63946',
+                            gold: '#ffd166',
+                            sand: '#f4a261'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&family=Itim&family=Mali:wght@600;700;800&family=Patrick Hand&display=swap" rel="stylesheet">
+
+    <!-- Game Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #111827;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .font-quest {
+            font-family: 'Patrick Hand', 'Mali', 'Outfit', cursive, sans-serif;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen select-none">
+
+    <div id="game-wrapper" class="relative w-[1280px] h-[720px] bg-[#1c2d1b] rounded-2xl overflow-hidden shadow-2xl shadow-black border-2 border-[#5c4731]">
+        
+        <!-- Canvas Trò Chơi Chính -->
+        <canvas id="game-canvas" width="1280" height="720" class="block w-full h-full bg-[#7ba951]"></canvas>
+
+        <!-- Joystick Zone cho cảm ứng -->
+        <div id="joystick-zone" class="absolute bottom-6 left-6 w-36 h-36 z-30 pointer-events-auto"></div>
+
+        <!-- ========================================================
+             HUD THANH CÔNG CỤ VƯỜN HOA HỒNG VẼ TAY (HAND-DRAWN STUDIO)
+             ======================================================== -->
+        <div id="hud-overlay" class="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none z-20">
+            <!-- Hàng nút tiện ích trên cùng -->
+            <div class="flex justify-end items-start pointer-events-auto w-full">
+                <!-- Hàng nút điều khiển & chuyển trang -->
+                <div class="flex items-center space-x-2">
+                    <!-- Âm thanh -->
+                    <button class="px-2.5 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center justify-center" id="btn-toggle-sound" title="Bật / Tắt Âm Thanh (Đang phát - Âm lượng 20%)">
+                        <img id="sound-icon-img" class="w-5 h-5 object-contain" src="assets/ui/icons/sound_normal.png" alt="Âm thanh" />
+                    </button>
+                    <!-- Nút Tiệm Hạt Giống -->
+                    <button class="px-3.5 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1.5" onclick="window.roseGardenManager.openSeedShopModal()">
+                        <img src="assets/rose_garden/icons/sprout_soil.png" class="w-4 h-4 object-contain inline-block"> <span>Tiệm Hạt Giống</span>
+                    </button>
+                    <!-- Nút Tiệm Bình Tưới -->
+                    <button class="px-3.5 py-1.5 bg-[#fbf6d9] hover:bg-[#fff9e6] text-[#3b2512] border-2 border-[#5c4731] rounded-xl text-xs font-bold font-quest transition-all shadow-md flex items-center space-x-1.5" onclick="window.roseGardenManager.openToolShopModal()">
+                        <img src="assets/rose_garden/icons/shower_head.png" class="w-4 h-4 object-contain inline-block"> <span>Tiệm Bình Tưới</span>
+                    </button>
+                    <!-- Về Sân Trường TNU -->
+                    <a href="index.html" class="px-3.5 py-1.5 quest-image2-btn font-quest text-xs font-bold flex items-center space-x-1">
+                        <span>🏛️</span> <span>Về Trường ĐH Tây Nguyên</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bảng điều khiển kiểm tra nhanh ở góc dưới bên phải -->
+            <div class="flex justify-end items-end pointer-events-auto">
+                <div class="px-4 py-2.5 bg-[#fbf6d9]/95 border-2 border-[#5c4731] rounded-2xl shadow-xl font-quest text-xs text-[#3b2512] flex items-center gap-3">
+                    <span class="font-bold text-amber-900">⚡ Thao Tác Nhanh:</span>
+                    <button class="px-2.5 py-1 bg-[#dcfce7] hover:bg-[#bbf7d0] border border-[#166534] rounded-lg text-xs font-bold text-[#14532d] flex items-center gap-1" onclick="window.roseGardenManager.refillWaterCan()">
+                        <img src="assets/rose_garden/icons/water_drop.png" class="w-3.5 h-3.5 object-contain inline-block"> <span>Hứng Đầy Nước</span>
+                    </button>
+                    <button class="px-2.5 py-1 bg-[#fef08a] hover:bg-[#fef9c3] border border-[#ca8a04] rounded-lg text-xs font-bold text-[#854d0e] flex items-center gap-1" onclick="window.roseGardenManager.claimStarterSeeds()">
+                        <img src="assets/rose_garden/icons/chestnut.png" class="w-3.5 h-3.5 object-contain inline-block"> <span>+5 Hạt Giống</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div id="toast-container" class="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-2 pointer-events-none z-50"></div>
+
+        <!-- Banner Chúc Mừng -->
+        <div id="celebration-banner" class="celebration-banner">
+            <div class="celebration-title" id="celebration-title">🎉 CHÚC MỪNG!</div>
+            <div class="celebration-desc" id="celebration-desc">Bạn vừa nhận được một vật phẩm quý hiếm!</div>
+        </div>
+
+    </div>
+
+    <!-- VENDOR SCRIPTS -->
+    <script src="vendor/nipplejs.min.js"></script>
+    <script src="vendor/confetti.min.js"></script>
+
+    <!-- CORE GAME SCRIPTS -->
+    <script src="js/i18n.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/wing_db.js"></script>
+    <script src="js/pet_db.js"></script>
+    <script src="js/head_db.js"></script>
+    <script src="js/body_db.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/game.js"></script>
+
+    <!-- MODULE VƯỜN HOA HỒNG (FILE RIÊNG BIỆT) -->
+    <script src="js/rose_garden.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Đặt map hiện tại là map2_rose ngay từ đầu
+            if (window.useGameStore) {
+                window.useGameStore.setState({ currentMapId: 'map2_rose' });
+            }
+
+            // Khởi tạo UI Manager
+            if (window.uiManager) window.uiManager.init();
+
+            // Khởi tạo Game Engine
+            window.gameInstance = new GameEngine();
+            window.gameInstance.init();
+
+            // Đặt vị trí nhân vật tại sân đá trung tâm trước cổng vườn hoa
+            if (window.gameInstance && window.gameInstance.player) {
+                window.gameInstance.player.x = 670;
+                window.gameInstance.player.y = 440;
+            }
+
+            // Nút Bật / Tắt âm thanh & điều chỉnh âm lượng
+            const soundBtn = document.getElementById('btn-toggle-sound');
+            const soundIconImg = document.getElementById('sound-icon-img');
+            if (soundBtn && window.soundSystem) {
+                soundBtn.onclick = () => {
+                    window.soundSystem.init();
+                    const isMuted = window.soundSystem.toggleMute();
+                    if (soundIconImg) {
+                        soundIconImg.src = isMuted ? 'assets/ui/icons/sound_muted.png' : 'assets/ui/icons/sound_normal.png';
+                        soundIconImg.classList.add('icon-pop-spring');
+                        setTimeout(() => soundIconImg.classList.remove('icon-pop-spring'), 450);
+                    }
+                };
+                soundBtn.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    if (!window.soundSystem) return;
+                    window.soundSystem.init();
+                    let currentVol = window.soundSystem.bgmVolume;
+                    currentVol += (e.deltaY < 0 ? 0.05 : -0.05);
+                    currentVol = Math.max(0.05, Math.min(1.0, currentVol));
+                    window.soundSystem.setVolume(currentVol);
+                    const percent = Math.round(currentVol * 100);
+                    if (window.soundSystem.isMuted) window.soundSystem.toggleMute();
+                    if (window.uiManager && typeof window.uiManager.showToast === 'function') {
+                        window.uiManager.showToast(`🔊 Âm lượng nhạc nền: ${percent}%`, 'info');
+                    }
+                    soundBtn.title = `Tắt Âm Thanh (Đang phát - Âm lượng ${percent}%) - Cuộn chuột để chỉnh`;
+                }, { passive: false });
+            }
+
+            // Thông báo chào mừng
+            setTimeout(() => {
+                if (window.uiManager) {
+                    window.uiManager.showToast('🌹 Chào mừng bạn đến với Vườn Hoa Hồng ĐH Tây Nguyên! Hãy ghé Tiệm Hạt Giống (mái đỏ) và Vòi Nước để bắt đầu làm vườn nhé!', 'info');
+                }
+            }, 600);
+        });
+    </script>
+</body>
+</html>

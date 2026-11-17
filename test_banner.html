@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm Thử Thanh Thông Báo Hoàng Gia RPG 3 Mảnh</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background-color: #1e293b;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .demo-panel {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 30px;
+        }
+        .banner-row {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        input[type="text"] {
+            flex: 1;
+            min-width: 280px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: #fff;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background: #eab308;
+            color: #713f12;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #facc15;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: #fef08a; margin-bottom: 8px;">✨ DEMO THANH THÔNG BÁO HOÀNG GIA RPG (3 MẢNH)</h1>
+    <p style="color: #cbd5e1; margin-bottom: 24px;">Mảnh trái cố định + Mảnh giữa kéo giãn theo độ rộng chữ + Mảnh phải phát sáng</p>
+
+    <div class="demo-panel">
+        <h3>1. Thử Nghiệm Kéo Giãn Theo Độ Rộng Chữ Thời Gian Thực</h3>
+        <div class="controls">
+            <input type="text" id="custom-text" value="🎉 Bạn đã hoàn thành nhiệm vụ Tìm Đồ Án cho Anh Sinh Viên CNTT!" oninput="updateLiveBanner()">
+            <button onclick="triggerToast()">Bắn Thông Báo Bay Xuống (Show Toast)</button>
+        </div>
+
+        <div class="banner-row" id="live-banner-container">
+            <div class="rpg-toast-banner">
+                <div class="rpg-toast-left"></div>
+                <div class="rpg-toast-mid">
+                    <span class="rpg-toast-text" id="live-banner-text">🎉 Bạn đã hoàn thành nhiệm vụ Tìm Đồ Án cho Anh Sinh Viên CNTT!</span>
+                </div>
+                <div class="rpg-toast-right"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-panel">
+        <h3>2. Các Độ Dài Chữ Khác Nhau</h3>
+        
+        <div style="margin-top: 16px;">
+            <p style="color: #94a3b8; font-size: 13px;">A. Chuỗi ngắn (Short):</p>
+            <div class="banner-row">
+                <div class="rpg-toast-banner">
+                    <div class="rpg-toast-left"></div>
+                    <div class="rpg-toast-mid">
+                        <span class="rpg-toast-text">💰 Nhận +200 Xu Sinh Viên!</span>
+                    </div>
+                    <div class="rpg-toast-right"></div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 24px;">
+            <p style="color: #94a3b8; font-size: 13px;">B. Chuỗi vừa (Medium - Thông báo hệ thống):</p>
+            <div class="banner-row">
+                <div class="rpg-toast-banner">
+                    <div class="rpg-toast-left"></div>
+                    <div class="rpg-toast-mid">
+                        <span class="rpg-toast-text">✨ Mở khóa thành công Cánh Hoàng Kim Ma Tôn!</span>
+                    </div>
+                    <div class="rpg-toast-right"></div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 24px;">
+            <p style="color: #94a3b8; font-size: 13px;">C. Chuỗi dài (Long - Thành tựu hiếm):</p>
+            <div class="banner-row">
+                <div class="rpg-toast-banner">
+                    <div class="rpg-toast-left"></div>
+                    <div class="rpg-toast-mid">
+                        <span class="rpg-toast-text">👑 ĐẠI TIỆC ẨM THỰC THÀNH CÔNG: Chế tạo thành công Giỏ Quà Đại Tiệc Ẩm Thực Lễ Hội!</span>
+                    </div>
+                    <div class="rpg-toast-right"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khay Toast Demo -->
+    <div id="toast-container" class="absolute top-[68px] left-1/2 -translate-x-1/2 z-50 flex flex-col items-center space-y-2 pointer-events-none"></div>
+
+    <script src="js/ui.js"></script>
+    <script>
+        function updateLiveBanner() {
+            const txt = document.getElementById('custom-text').value;
+            document.getElementById('live-banner-text').innerText = txt;
+        }
+
+        // Mock uiManager instance to trigger showToast
+        const ui = new (function() {
+            this.showToast = function(msg, type = 'info') {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+
+                const toast = document.createElement('div');
+                toast.className = `rpg-toast-banner toast-${type}`;
+                toast.innerHTML = `
+                    <div class="rpg-toast-left"></div>
+                    <div class="rpg-toast-mid">
+                        <span class="rpg-toast-text">${msg}</span>
+                    </div>
+                    <div class="rpg-toast-right"></div>
+                `;
+
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-18px) scale(0.94)';
+                    toast.style.transition = 'all 0.4s ease';
+                    setTimeout(() => {
+                        if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+                    }, 400);
+                }, 3600);
+            };
+        })();
+
+        function triggerToast() {
+            const txt = document.getElementById('custom-text').value;
+            ui.showToast(txt, 'success');
+        }
+    </script>
+</body>
+</html>
