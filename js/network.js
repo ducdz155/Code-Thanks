@@ -331,6 +331,11 @@ class NetworkManager {
             return 'ws://localhost:8088/ws';
         }
 
+        // Nếu chạy trên CDN tĩnh như Vercel, Cloudflare Pages, GitHub Pages -> tự động kết nối về backend WebSocket Render
+        if (host.includes('vercel.app') || host.includes('pages.dev') || host.includes('github.io')) {
+            return 'wss://code-thanks.onrender.com/ws';
+        }
+
         return `${protocol}//${host}/ws`;
     }
 
