@@ -322,6 +322,14 @@ class NetworkManager {
             return window.__TNU_CUSTOM_WS_URL__;
         }
 
+        // Hỗ trợ truyền server qua URL: ví dụ ?server=code-thanks-server.onrender.com
+        const urlParams = new URLSearchParams(window.location.search);
+        const customServer = urlParams.get('server');
+        if (customServer) {
+            const proto = customServer.startsWith('localhost') ? 'ws:' : 'wss:';
+            return `${proto}//${customServer.replace(/^wss?:\/\//, '')}/ws`;
+        }
+
         const isHttps = window.location.protocol === 'https:';
         const protocol = isHttps ? 'wss:' : 'ws:';
         const host = window.location.host;
@@ -331,9 +339,14 @@ class NetworkManager {
             return 'ws://localhost:8088/ws';
         }
 
-        // Nếu chạy trên CDN tĩnh như Vercel, Cloudflare Pages, GitHub Pages -> tự động kết nối về backend WebSocket Render
+        // Nếu chạy trên CDN tĩnh như Vercel, Cloudflare Pages, GitHub Pages -> tự động luân chuyển kết nối về backend WebSocket Render
         if (host.includes('vercel.app') || host.includes('pages.dev') || host.includes('github.io')) {
-            return 'wss://code-thanks.onrender.com/ws';
+            const candidates = [
+                'wss://code-thanks-server.onrender.com/ws',
+                'wss://code-thanks.onrender.com/ws'
+            ];
+            const idx = (this.reconnectAttempts || 0) % candidates.length;
+            return candidates[idx];
         }
 
         return `${protocol}//${host}/ws`;

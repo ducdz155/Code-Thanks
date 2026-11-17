@@ -1199,7 +1199,7 @@
             animateProgress() {
                 if (this.isFinished) return;
                 if (this.progress < this.targetProgress) {
-                    this.progress += Math.max(0.8, (this.targetProgress - this.progress) * 0.15);
+                    this.progress += Math.max(2.0, (this.targetProgress - this.progress) * 0.25);
                     if (this.progress > 99.5) this.progress = 100;
                 }
 
@@ -1217,12 +1217,10 @@
 
             loadCriticalAssets() {
                 const criticalUrls = [
-                    'assets/map1_campus.jpg',
                     'body/skin_shaolin_monk_icon.png',
                     'body/skin_obocchaman_icon.png',
                     'body/skin_ethnic_maiden_icon.png',
-                    'assets/ui/icons/sound_normal.png',
-                    'assets/ui/icons/sound_muted.png'
+                    'assets/ui/icons/sound_normal.png'
                 ];
 
                 let loadedCount = 0;
@@ -1230,11 +1228,10 @@
 
                 const checkItemDone = () => {
                     loadedCount++;
-                    const calculated = 15 + Math.floor((loadedCount / total) * 80);
+                    const calculated = 25 + Math.floor((loadedCount / total) * 75);
                     let msg = '🌸 Đang nạp tài nguyên...';
-                    if (calculated < 40) msg = '🏛️ Đang tải khuôn viên trường & Nhà số 7...';
-                    else if (calculated < 70) msg = '👔 Đang chuẩn bị trang phục & 3 skin khởi đầu...';
-                    else if (calculated < 92) msg = '🌹 Đang chuẩn bị Vườn hoa hồng & Hội chợ...';
+                    if (calculated < 50) msg = '🏛️ Đang tải khuôn viên trường & Nhà số 7...';
+                    else if (calculated < 80) msg = '👔 Đang chuẩn bị trang phục & 3 skin khởi đầu...';
                     else msg = '✨ Sẵn sàng bước vào khuôn viên trường!';
 
                     this.setProgress(calculated, msg);
@@ -1255,14 +1252,14 @@
                 criticalUrls.forEach(url => {
                     const img = new Image();
                     img.onload = () => checkItemDone();
-                    img.onerror = () => checkItemDone(); // Dù lỗi mạng vẫn đếm để không bị kẹt
+                    img.onerror = () => checkItemDone();
                     img.src = url;
                 });
 
-                // 3. Timeout an toàn: Tối đa 3.5 giây sẽ tự động hoàn thành nếu mạng chậm
+                // 3. Timeout an toàn: Tối đa 1.0 giây sẽ tự động vào game siêu tốc
                 setTimeout(() => {
-                    this.setProgress(100, '✨ Đang bước vào thế giới...');
-                }, 3500);
+                    this.setProgress(100, '✨ Sẵn sàng!');
+                }, 1000);
             },
 
             finish() {
@@ -1276,15 +1273,15 @@
                     }
                 } catch (e) {}
 
-                // Giữ 100% trong 250ms để người chơi nhìn thấy hoàn thành
+                // Giữ 100% trong 150ms để người chơi nhìn thấy hoàn thành
                 setTimeout(() => {
                     if (this.container) {
                         this.container.classList.add('preloader-fade-out');
                         setTimeout(() => {
                             this.container.style.display = 'none';
-                        }, 650);
+                        }, 400);
                     }
-                }, 250);
+                }, 150);
             }
         };
 
