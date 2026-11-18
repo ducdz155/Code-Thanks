@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: tnu-adventure-online
+    name: code-thanks-server
     runtime: node
     plan: free
     buildCommand: npm install

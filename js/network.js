@@ -322,12 +322,22 @@ class NetworkManager {
             return window.__TNU_CUSTOM_WS_URL__;
         }
 
-        // Hỗ trợ truyền server qua URL: ví dụ ?server=code-thanks-server.onrender.com
+        // 1. Kiểm tra LocalStorage nếu người chơi tự cấu hình Server
+        try {
+            const savedServer = localStorage.getItem('tnu_custom_ws_server');
+            if (savedServer && savedServer.trim()) {
+                const clean = savedServer.trim();
+                const proto = clean.startsWith('localhost') ? 'ws:' : (clean.startsWith('http:') ? 'ws:' : 'wss:');
+                return `${proto}//${clean.replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/ws\/?$/, '')}/ws`;
+            }
+        } catch (e) {}
+
+        // 2. Hỗ trợ truyền server qua URL: ví dụ ?server=code-thanks-server.onrender.com
         const urlParams = new URLSearchParams(window.location.search);
         const customServer = urlParams.get('server');
         if (customServer) {
             const proto = customServer.startsWith('localhost') ? 'ws:' : 'wss:';
-            return `${proto}//${customServer.replace(/^wss?:\/\//, '')}/ws`;
+            return `${proto}//${customServer.replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '')}/ws`;
         }
 
         const isHttps = window.location.protocol === 'https:';
@@ -343,6 +353,7 @@ class NetworkManager {
         if (host.includes('vercel.app') || host.includes('pages.dev') || host.includes('github.io')) {
             const candidates = [
                 'wss://code-thanks-server.onrender.com/ws',
+                'wss://tnu-adventure-online.onrender.com/ws',
                 'wss://code-thanks.onrender.com/ws'
             ];
             const idx = (this.reconnectAttempts || 0) % candidates.length;
@@ -350,6 +361,83 @@ class NetworkManager {
         }
 
         return `${protocol}//${host}/ws`;
+    }
+
+    openServerConfigModal() {
+        const modal = document.getElementById('server-config-modal');
+        if (!modal) return;
+        const currentUrl = this.getServerUrl();
+        const dotEl = document.getElementById('server-modal-status-dot');
+        const textEl = document.getElementById('server-modal-status-text');
+        const urlEl = document.getElementById('server-modal-url-display');
+        const countEl = document.getElementById('server-modal-player-count');
+        const inputEl = document.getElementById('input-custom-server-url');
+
+        if (dotEl) dotEl.innerText = this.isConnected ? '🟢' : '⚪';
+        if (textEl) textEl.innerText = this.isConnected ? 'Đang kết nối TNU Online' : 'Ngoại tuyến (Chưa kết nối Server)';
+        if (urlEl) urlEl.innerText = currentUrl;
+        if (countEl) countEl.innerText = `${this.isConnected ? Math.max(1, this.onlineCount) : 1} người`;
+        if (inputEl) {
+            try {
+                inputEl.value = localStorage.getItem('tnu_custom_ws_server') || '';
+            } catch (e) {}
+        }
+
+        modal.style.display = 'flex';
+        modal.classList.add('active', 'modal-visible');
+    }
+
+    closeServerConfigModal() {
+        const modal = document.getElementById('server-config-modal');
+        if (modal) {
+            modal.classList.remove('active', 'modal-visible');
+            modal.style.display = 'none';
+        }
+    }
+
+    applyCustomServerInput() {
+        const inputEl = document.getElementById('input-custom-server-url');
+        if (!inputEl) return;
+        const val = inputEl.value.trim();
+        try {
+            if (val) {
+                localStorage.setItem('tnu_custom_ws_server', val);
+            } else {
+                localStorage.removeItem('tnu_custom_ws_server');
+            }
+        } catch (e) {}
+
+        if (this.socket) {
+            try { this.socket.close(); } catch (e) {}
+            this.socket = null;
+        }
+        this.isConnected = false;
+        this.reconnectAttempts = 0;
+        this.connect();
+        this.openServerConfigModal();
+        if (window.uiManager && window.uiManager.showToast) {
+            window.uiManager.showToast('🔄 Đang thử kết nối máy chủ mới...', 'info');
+        }
+    }
+
+    resetServerToDefault() {
+        try {
+            localStorage.removeItem('tnu_custom_ws_server');
+        } catch (e) {}
+        const inputEl = document.getElementById('input-custom-server-url');
+        if (inputEl) inputEl.value = '';
+
+        if (this.socket) {
+            try { this.socket.close(); } catch (e) {}
+            this.socket = null;
+        }
+        this.isConnected = false;
+        this.reconnectAttempts = 0;
+        this.connect();
+        this.openServerConfigModal();
+        if (window.uiManager && window.uiManager.showToast) {
+            window.uiManager.showToast('♻️ Đã khôi phục địa chỉ máy chủ mặc định!', 'info');
+        }
     }
 
     connect() {
@@ -721,6 +809,16 @@ class NetworkManager {
         if (onlineCountEl) {
             onlineCountEl.innerHTML = `${statusDot} ${count} online`;
         }
+
+        // Đồng bộ lên Server Modal nếu đang mở
+        const dotEl = document.getElementById('server-modal-status-dot');
+        const textEl = document.getElementById('server-modal-status-text');
+        const urlEl = document.getElementById('server-modal-url-display');
+        const modalCountEl = document.getElementById('server-modal-player-count');
+        if (dotEl) dotEl.innerText = statusDot;
+        if (textEl) textEl.innerText = this.isConnected ? 'Đang kết nối TNU Online' : 'Ngoại tuyến (Chưa kết nối Server)';
+        if (urlEl) urlEl.innerText = this.getServerUrl();
+        if (modalCountEl) modalCountEl.innerText = `${count} người`;
     }
 
     bindEvents() {
