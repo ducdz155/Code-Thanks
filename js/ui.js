@@ -1814,6 +1814,8 @@ class UIManager {
             setTimeout(() => inputName.focus(), 150);
         }
         this.renderStarterSkinPreviews();
+        requestAnimationFrame(() => this.renderStarterSkinPreviews());
+        setTimeout(() => this.renderStarterSkinPreviews(), 80);
     }
 
     closeCharacterSetupModal() {

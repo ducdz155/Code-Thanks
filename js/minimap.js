@@ -24,6 +24,9 @@ class MinimapSystem {
             this.mapImageLoaded = true;
         };
         this.mapImage.src = 'assets/map1_campus.jpg';
+        if (this.mapImage.complete && this.mapImage.naturalWidth > 0) {
+            this.mapImageLoaded = true;
+        }
 
         // Kích thước thế giới Map 1
         this.worldW = 2560;

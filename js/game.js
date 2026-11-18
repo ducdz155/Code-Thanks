@@ -48,11 +48,14 @@ class GameEngine {
 
         // Nạp hình ảnh bản đồ Vector TNU Campus mới
         this.map1Image = new Image();
-        this.map1Image.src = 'assets/map1_campus.jpg';
         this.map1ImageLoaded = false;
         this.map1Image.onload = () => {
             this.map1ImageLoaded = true;
         };
+        this.map1Image.src = 'assets/map1_campus.jpg';
+        if (this.map1Image.complete && this.map1Image.naturalWidth > 0) {
+            this.map1ImageLoaded = true;
+        }
     }
 
     init() {
@@ -4018,7 +4021,11 @@ class GameEngine {
         // Nền nâu đất bo tròn
         ctx.fillStyle = '#a75f3a';
         ctx.beginPath();
-        ctx.roundRect(cx - bw / 2, cy - bh / 2, bw, bh, 9);
+        if (typeof ctx.roundRect === 'function') {
+            ctx.roundRect(cx - bw / 2, cy - bh / 2, bw, bh, 9);
+        } else {
+            ctx.rect(cx - bw / 2, cy - bh / 2, bw, bh);
+        }
         ctx.fill();
 
         // Chữ trắng sắc nét

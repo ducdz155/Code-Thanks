@@ -1163,9 +1163,11 @@
         // HỆ THỐNG PRELOADER TẢI TÀI NGUYÊN MÀU BE TOÀN CẢNH
         // ========================================================
         const TNUPreloader = {
-            progress: 5,
-            targetProgress: 5,
+            progress: 0,
+            targetProgress: 0,
             isFinished: false,
+            cache: {},
+            watchdogTimer: null,
 
             init() {
                 this.bar = document.getElementById('preloader-bar');
@@ -1185,8 +1187,12 @@
                     this.tip.innerText = tips[Math.floor(Math.random() * tips.length)];
                 }
 
+                if (this.bar) this.bar.style.width = '2%';
+                if (this.percent) this.percent.innerText = '0%';
+                if (this.status) this.status.innerText = '🌸 Đang khởi tạo tài nguyên thế giới TNU...';
+
                 this.animateProgress();
-                this.loadCriticalAssets();
+                this.loadAllGameAssets();
             },
 
             setProgress(pct, statusText) {
@@ -1199,12 +1205,12 @@
             animateProgress() {
                 if (this.isFinished) return;
                 if (this.progress < this.targetProgress) {
-                    this.progress += Math.max(2.0, (this.targetProgress - this.progress) * 0.25);
-                    if (this.progress > 99.5) this.progress = 100;
+                    const step = Math.max(0.6, (this.targetProgress - this.progress) * 0.2);
+                    this.progress = Math.min(this.targetProgress, this.progress + step);
                 }
 
                 const currentVal = Math.floor(this.progress);
-                if (this.bar) this.bar.style.width = `${currentVal}%`;
+                if (this.bar) this.bar.style.width = `${Math.max(2, currentVal)}%`;
                 if (this.percent) this.percent.innerText = `${currentVal}%`;
 
                 if (currentVal >= 100 && this.targetProgress >= 100) {
@@ -1215,73 +1221,184 @@
                 requestAnimationFrame(() => this.animateProgress());
             },
 
-            loadCriticalAssets() {
-                const criticalUrls = [
+            loadAllGameAssets() {
+                // DANH SÁCH TOÀN BỘ TÀI NGUYÊN BẮT BUỘC TẢI XONG 100% MỚI CHO VÀO GAME
+                const assetUrls = [
+                    // 1. Bản đồ khuôn viên TNU lớn 2560x3432 (Cốt lõi hiển thị mặt đất)
+                    'assets/map1_campus.jpg',
+
+                    // 2. Bộ 3 Skin Khởi Đầu (Icon thẻ bài + Sprite cử động 4 hướng)
                     'body/skin_shaolin_monk_icon.png',
+                    'body/skin_shaolin_monk_down_0.png',
+                    'body/skin_shaolin_monk_up_0.png',
+                    'body/skin_shaolin_monk_right_0.png',
                     'body/skin_obocchaman_icon.png',
+                    'body/skin_obocchaman_down_0.png',
+                    'body/skin_obocchaman_up_0.png',
+                    'body/skin_obocchaman_right_0.png',
                     'body/skin_ethnic_maiden_icon.png',
-                    'assets/ui/icons/sound_normal.png'
+                    'body/skin_ethnic_maiden_down_0.png',
+                    'body/skin_ethnic_maiden_up_0.png',
+                    'body/skin_ethnic_maiden_right_0.png',
+
+                    // 3. Toàn bộ 8 Giảng Viên & Sinh Viên CNTT NPC Map 1 (Icon & Sprite đứng)
+                    'npc/skin_0/down_0.png', 'npc/skin_0/icon.png',
+                    'npc/skin_1/down_0.png', 'npc/skin_1/icon.png',
+                    'npc/skin_2/down_0.png', 'npc/skin_2/icon.png',
+                    'npc/skin_3/down_0.png', 'npc/skin_3/icon.png',
+                    'npc/skin_4/down_0.png', 'npc/skin_4/icon.png',
+                    'npc/skin_5/down_0.png', 'npc/skin_5/icon.png',
+                    'npc/skin_7/down_0.png', 'npc/skin_7/icon.png',
+                    'npc/skin_k45/down_0.png', 'npc/skin_k45/icon.png',
+
+                    // 4. Kỳ quan & Đồ họa đặc biệt Map 1
+                    'assets/Cayuocnguyen/14517.png',
+                    'assets/Cayuocnguyen/wishing_board.png',
+                    'assets/items/campus_document.png',
+                    'assets/Hu/24613.png',
+                    'assets/Hu/24920.png',
+
+                    // 5. Toàn bộ Icon Giao Diện HUD & Tương tác
+                    'assets/ui/icons/sound_normal.png',
+                    'assets/ui/icons/sound_muted.png',
+                    'assets/ui/icons/sound_active.png',
+                    'assets/ui/icons/gift_normal.png',
+                    'assets/ui/icons/gift_active.png',
+                    'assets/ui/icons/graduate_normal.png',
+                    'assets/ui/icons/graduate_active.png',
+                    'assets/ui/icons/dress_normal.png',
+                    'assets/ui/icons/dress_active.png',
+                    'assets/ui/icons/help_normal.png',
+                    'assets/ui/icons/help_active.png',
+                    'assets/ui/icons/chat_normal.png',
+                    'assets/ui/icons/friends_normal.png',
+                    'assets/ui/icons/scroll_normal.png',
+                    'assets/ui/icons/bell_normal.png',
+                    'assets/ui/icons/heart_normal.png',
+                    'assets/ui/icons/flower_normal.png',
+                    'assets/ui/icons/coin_normal.png',
+                    'assets/ui/icons/bus_normal.png'
                 ];
 
                 let loadedCount = 0;
-                const total = criticalUrls.length + 1; // +1 cho font
+                const total = assetUrls.length + 1; // +1 cho Document Fonts
 
-                const checkItemDone = () => {
+                const handleOneDone = (url, img) => {
                     loadedCount++;
-                    const calculated = 25 + Math.floor((loadedCount / total) * 75);
-                    let msg = '🌸 Đang nạp tài nguyên...';
-                    if (calculated < 50) msg = '🏛️ Đang tải khuôn viên trường & Nhà số 7...';
-                    else if (calculated < 80) msg = '👔 Đang chuẩn bị trang phục & 3 skin khởi đầu...';
-                    else msg = '✨ Sẵn sàng bước vào khuôn viên trường!';
-
-                    this.setProgress(calculated, msg);
+                    if (url && img) {
+                        this.cache[url] = img;
+                        // Đồng bộ trực tiếp vào cache của bodySQLDB
+                        if (url.startsWith('body/') && window.bodySQLDB && window.bodySQLDB.imageCache) {
+                            window.bodySQLDB.imageCache.set(url, img);
+                        }
+                        // Gắn trực tiếp ảnh Map 1 đã giải mã vào GameEngine & Minimap
+                        if (url === 'assets/map1_campus.jpg') {
+                            if (window.gameInstance) {
+                                window.gameInstance.map1Image = img;
+                                window.gameInstance.map1ImageLoaded = true;
+                            }
+                            if (window.minimapSystem) {
+                                window.minimapSystem.mapImage = img;
+                                window.minimapSystem.mapImageLoaded = true;
+                            }
+                        }
+                    }
 
                     if (loadedCount >= total) {
-                        this.setProgress(100, '✨ Tải hoàn tất! Đang bước vào thế giới...');
+                        this.setProgress(100, '✨ Tải hoàn tất 100%! Đang bước vào thế giới...');
+                    } else {
+                        const calculated = Math.min(99, Math.floor((loadedCount / total) * 100));
+                        let msg = `🌸 Đang tải tài nguyên (${loadedCount}/${total})...`;
+                        if (calculated < 25) {
+                            msg = `🏛️ Đang tải bản đồ khuôn viên Đại Học Tây Nguyên (${loadedCount}/${total})...`;
+                        } else if (calculated < 50) {
+                            msg = `🌳 Đang nạp Cây Ước Nguyện, Lồng đèn & Giảng đường 7 (${loadedCount}/${total})...`;
+                        } else if (calculated < 75) {
+                            msg = `👨‍🏫 Đang kết nối Thầy Cô Khoa CNTT & NPC sự kiện (${loadedCount}/${total})...`;
+                        } else {
+                            msg = `👘 Đang nạp trang phục, 3 Skin khởi đầu & Giao diện (${loadedCount}/${total})...`;
+                        }
+                        this.setProgress(calculated, msg);
                     }
                 };
 
-                // 1. Kiểm tra Google Fonts
+                // 1. Chờ Google Fonts
                 if (document.fonts && document.fonts.ready) {
-                    document.fonts.ready.then(() => checkItemDone()).catch(() => checkItemDone());
+                    document.fonts.ready
+                        .then(() => handleOneDone('fonts', null))
+                        .catch(() => handleOneDone('fonts', null));
                 } else {
-                    checkItemDone();
+                    handleOneDone('fonts', null);
                 }
 
-                // 2. Tải song song các ảnh cốt lõi
-                criticalUrls.forEach(url => {
+                // 2. Tải song song tất cả hình ảnh
+                assetUrls.forEach(url => {
                     const img = new Image();
-                    img.onload = () => checkItemDone();
-                    img.onerror = () => checkItemDone();
+                    img.onload = () => handleOneDone(url, img);
+                    img.onerror = () => {
+                        console.warn('[Preloader] Lỗi nạp asset (bỏ qua để không kẹt):', url);
+                        handleOneDone(url, img);
+                    };
                     img.src = url;
                 });
 
-                // 3. Timeout an toàn: Tối đa 1.0 giây sẽ tự động vào game siêu tốc
-                setTimeout(() => {
-                    this.setProgress(100, '✨ Sẵn sàng!');
-                }, 1000);
+                // 3. Watchdog an toàn (30 giây) - phòng khi mất mạng đột ngột
+                this.watchdogTimer = setTimeout(() => {
+                    if (!this.isFinished) {
+                        console.warn('[Preloader] Quá 30s watchdog, tự động hoàn tất tải.');
+                        this.setProgress(100, '✨ Sẵn sàng bước vào khuôn viên trường!');
+                    }
+                }, 30000);
             },
 
             finish() {
                 if (this.isFinished) return;
                 this.isFinished = true;
+                if (this.watchdogTimer) {
+                    clearTimeout(this.watchdogTimer);
+                    this.watchdogTimer = null;
+                }
 
-                // Đảm bảo 3 preview avatar được vẽ lên canvas
+                // Chắc chắn gán ảnh Map 1 nếu đã có trong cache
+                const mapImg = this.cache['assets/map1_campus.jpg'];
+                if (mapImg && mapImg.complete) {
+                    if (window.gameInstance) {
+                        window.gameInstance.map1Image = mapImg;
+                        window.gameInstance.map1ImageLoaded = true;
+                    }
+                    if (window.minimapSystem) {
+                        window.minimapSystem.mapImage = mapImg;
+                        window.minimapSystem.mapImageLoaded = true;
+                    }
+                }
+
+                // Vẽ ngay 3 preview avatar của 3 skin khởi đầu trên Character Setup Modal
                 try {
                     if (window.uiManager && typeof window.uiManager.renderStarterSkinPreviews === 'function') {
                         window.uiManager.renderStarterSkinPreviews();
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.warn('Lỗi vẽ avatar khởi đầu:', e);
+                }
 
-                // Giữ 100% trong 150ms để người chơi nhìn thấy hoàn thành
+                // Giữ màn hình 100% trong 300ms để người chơi nhìn thấy trạng thái hoàn tất
                 setTimeout(() => {
                     if (this.container) {
                         this.container.classList.add('preloader-fade-out');
                         setTimeout(() => {
                             this.container.style.display = 'none';
-                        }, 400);
+                            // Vẽ lại canvas lần nữa sau khi preloader biến mất
+                            try {
+                                if (window.uiManager && typeof window.uiManager.renderStarterSkinPreviews === 'function') {
+                                    window.uiManager.renderStarterSkinPreviews();
+                                }
+                                if (window.gameInstance && typeof window.gameInstance.render === 'function') {
+                                    window.gameInstance.render();
+                                }
+                            } catch (e) {}
+                        }, 550);
                     }
-                }, 150);
+                }, 300);
             }
         };
 
