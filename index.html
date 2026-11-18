@@ -34,11 +34,29 @@
     <!-- Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
 
-    <!-- Preload Critical Assets (Tải ưu tiên 3 skin khởi đầu & icon quan trọng) -->
-    <link rel="preload" as="image" href="body/skin_shaolin_monk_icon.png">
-    <link rel="preload" as="image" href="body/skin_obocchaman_icon.png">
-    <link rel="preload" as="image" href="body/skin_ethnic_maiden_icon.png">
-    <link rel="preload" as="image" href="assets/ui/icons/sound_normal.png">
+    <!-- ========================================================
+         CẤU HÌNH CLOUDFLARE R2 OBJECT STORAGE CDN
+         ======================================================== -->
+    <script>
+        const R2_URL = "https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev";
+        window.R2_URL = R2_URL;
+
+        window.getR2Url = function(path) {
+            if (!path) return '';
+            if (typeof path !== 'string') return path;
+            if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
+                return path;
+            }
+            const clean = path.replace(/^\/+/, '');
+            return `${window.R2_URL}/${clean}`;
+        };
+    </script>
+
+    <!-- Preload Critical Assets (Tải trực tiếp siêu tốc từ Cloudflare R2) -->
+    <link rel="preload" as="image" href="https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev/body/skin_shaolin_monk_icon.png">
+    <link rel="preload" as="image" href="https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev/body/skin_obocchaman_icon.png">
+    <link rel="preload" as="image" href="https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev/body/skin_ethnic_maiden_icon.png">
+    <link rel="preload" as="image" href="https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev/assets/ui/icons/sound_normal.png">
 
     <style>
         body {
@@ -1396,15 +1414,22 @@
                     handleOneDone('fonts', null);
                 }
 
-                // 2. Tải song song tất cả hình ảnh
+                // 2. Tải song song tất cả hình ảnh trực tiếp từ Cloudflare R2
                 assetUrls.forEach(url => {
+                    const r2Url = window.getR2Url(url);
                     const img = new Image();
                     img.onload = () => handleOneDone(url, img);
                     img.onerror = () => {
-                        console.warn('[Preloader] Lỗi nạp asset (bỏ qua để không kẹt):', url);
-                        handleOneDone(url, img);
+                        // Nếu R2 trả 404, fallback thử nạp từ máy chủ gốc
+                        if (img.src === r2Url && r2Url !== url) {
+                            console.warn('[R2 CDN] File chưa có trên R2, fallback về host gốc:', url);
+                            img.src = url;
+                        } else {
+                            console.warn('[Preloader] Lỗi nạp asset (bỏ qua để không kẹt):', url);
+                            handleOneDone(url, img);
+                        }
                     };
-                    img.src = url;
+                    img.src = r2Url;
                 });
 
                 // 3. Watchdog an toàn (30 giây) - phòng khi mất mạng đột ngột
@@ -1467,9 +1492,33 @@
             }
         };
 
+        function applyR2ToHtmlImages() {
+            try {
+                document.querySelectorAll('img[src], img[data-normal], img[data-active]').forEach(img => {
+                    const src = img.getAttribute('src');
+                    if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+                        img.src = window.getR2Url(src);
+                    }
+                    const dNormal = img.getAttribute('data-normal');
+                    if (dNormal && !dNormal.startsWith('http') && !dNormal.startsWith('data:')) {
+                        img.setAttribute('data-normal', window.getR2Url(dNormal));
+                    }
+                    const dActive = img.getAttribute('data-active');
+                    if (dActive && !dActive.startsWith('http') && !dActive.startsWith('data:')) {
+                        img.setAttribute('data-active', window.getR2Url(dActive));
+                    }
+                });
+            } catch (e) {
+                console.warn('[R2 CDN] Lỗi cập nhật thẻ img HTML:', e);
+            }
+        }
+
         function startTNUGame() {
             if (window.__tnuGameStarted) return;
             window.__tnuGameStarted = true;
+
+            // Đồng bộ toàn bộ thẻ <img> trên giao diện sang Cloudflare R2
+            applyR2ToHtmlImages();
 
             // Kích hoạt Preloader màu be toàn cảnh ngay lập tức
             TNUPreloader.init();

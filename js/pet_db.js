@@ -1465,18 +1465,23 @@ class PetSQLDatabase {
         this.totalImages = allUrls.size;
 
         allUrls.forEach(url => {
+            const r2Url = (window.getR2Url ? window.getR2Url(url) : url);
             const img = new Image();
-            img.src = url;
             img.onload = () => {
                 this.loadedCount++;
                 if (this.loadedCount >= this.totalImages) {
                     this.isLoaded = true;
-                    console.log('⚡ [PetDB] Đã tải trước 100% texture Pet vào bộ nhớ đệm RAM!');
+                    console.log('⚡ [PetDB] Đã tải trước 100% texture Pet từ Cloudflare R2!');
                 }
             };
             img.onerror = (e) => {
-                console.warn(`[PetDB] Lỗi tải ảnh pet: ${url}`, e);
+                if (img.src === r2Url && r2Url !== url) {
+                    img.src = url;
+                } else {
+                    console.warn(`[PetDB] Lỗi tải ảnh pet: ${url}`, e);
+                }
             };
+            img.src = r2Url;
             this.imageCache.set(url, img);
         });
 

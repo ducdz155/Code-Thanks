@@ -17,17 +17,17 @@ class ClawMachineGame {
         // 2. Cần gắp trạng thái mở (Open Claw)
         // 3. Cần gắp trạng thái kẹp chặt (Closed Claw)
         this.machineImg = new Image();
-        this.machineImg.src = 'assets/minigames/claw_machine_pink.png';
+        this.machineImg.src = (window.getR2Url ? window.getR2Url('assets/minigames/claw_machine_pink.png') : 'assets/minigames/claw_machine_pink.png');
         this.machineLoaded = false;
         this.machineImg.onload = () => { this.machineLoaded = true; };
 
         this.clawOpenImg = new Image();
-        this.clawOpenImg.src = 'assets/minigames/claw_open.png';
+        this.clawOpenImg.src = (window.getR2Url ? window.getR2Url('assets/minigames/claw_open.png') : 'assets/minigames/claw_open.png');
         this.clawOpenLoaded = false;
         this.clawOpenImg.onload = () => { this.clawOpenLoaded = true; };
 
         this.clawClosedImg = new Image();
-        this.clawClosedImg.src = 'assets/minigames/claw_closed.png';
+        this.clawClosedImg.src = (window.getR2Url ? window.getR2Url('assets/minigames/claw_closed.png') : 'assets/minigames/claw_closed.png');
         this.clawClosedLoaded = false;
         this.clawClosedImg.onload = () => { this.clawClosedLoaded = true; };
 
@@ -1160,14 +1160,27 @@ class ShootingGalleryGame {
     }
 
     loadBattleImg(filename) {
+        const relPath = `battle/${filename}`;
+        const r2Url = (window.getR2Url ? window.getR2Url(relPath) : relPath);
         const img = new Image();
-        img.src = `battle/${filename}`;
+        img.onerror = () => {
+            if (img.src === r2Url && r2Url !== relPath) {
+                img.src = relPath;
+            }
+        };
+        img.src = r2Url;
         return img;
     }
 
     loadAssetImg(path) {
+        const r2Url = (window.getR2Url ? window.getR2Url(path) : path);
         const img = new Image();
-        img.src = path;
+        img.onerror = () => {
+            if (img.src === r2Url && r2Url !== path) {
+                img.src = path;
+            }
+        };
+        img.src = r2Url;
         return img;
     }
 
@@ -3838,8 +3851,15 @@ class FallingFoodCatcherGame {
             popcorn: 'assets/items/bap_rang_bo.png'
         };
         for (const k in foodAssets) {
+            const relPath = foodAssets[k];
+            const r2Url = (window.getR2Url ? window.getR2Url(relPath) : relPath);
             const img = new Image();
-            img.src = foodAssets[k];
+            img.onerror = () => {
+                if (img.src === r2Url && r2Url !== relPath) {
+                    img.src = relPath;
+                }
+            };
+            img.src = r2Url;
             this.foodImages[k] = img;
         }
 

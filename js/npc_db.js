@@ -138,17 +138,30 @@
             const skin = NPC_SKINS[skinKey];
             SPRITE_CACHE[skinKey] = {};
 
-            // Nạp Icon đại diện
+            // Nạp Icon đại diện (Hỗ trợ Cloudflare R2 + Fallback)
             const iconImg = new Image();
-            iconImg.src = skin.avatar;
+            const r2Avatar = (window.getR2Url ? window.getR2Url(skin.avatar) : skin.avatar);
+            iconImg.onerror = () => {
+                if (iconImg.src === r2Avatar && r2Avatar !== skin.avatar) {
+                    iconImg.src = skin.avatar;
+                }
+            };
+            iconImg.src = r2Avatar;
             ICON_CACHE[skinKey] = iconImg;
 
             // Nạp 16 khung hình chuyển động (4 hướng x 4 frames)
             directions.forEach(dir => {
                 SPRITE_CACHE[skinKey][dir] = [];
                 for (let f = 0; f < 4; f++) {
+                    const localPath = `${skin.folder}/${dir}_${f}.png`;
+                    const r2Path = (window.getR2Url ? window.getR2Url(localPath) : localPath);
                     const img = new Image();
-                    img.src = `${skin.folder}/${dir}_${f}.png`;
+                    img.onerror = () => {
+                        if (img.src === r2Path && r2Path !== localPath) {
+                            img.src = localPath;
+                        }
+                    };
+                    img.src = r2Path;
                     SPRITE_CACHE[skinKey][dir].push(img);
                 }
             });

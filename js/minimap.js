@@ -17,13 +17,20 @@ class MinimapSystem {
         this.ctx = null;
         this.topButtons = null;
 
-        // Ảnh bản đồ toàn trường
+        // Ảnh bản đồ toàn trường (Hỗ trợ Cloudflare R2 + Fallback)
+        const mapUrl = 'assets/map1_campus.jpg';
+        const r2MapUrl = (window.getR2Url ? window.getR2Url(mapUrl) : mapUrl);
         this.mapImage = new Image();
         this.mapImageLoaded = false;
         this.mapImage.onload = () => {
             this.mapImageLoaded = true;
         };
-        this.mapImage.src = 'assets/map1_campus.jpg';
+        this.mapImage.onerror = () => {
+            if (this.mapImage.src === r2MapUrl && r2MapUrl !== mapUrl) {
+                this.mapImage.src = mapUrl;
+            }
+        };
+        this.mapImage.src = r2MapUrl;
         if (this.mapImage.complete && this.mapImage.naturalWidth > 0) {
             this.mapImageLoaded = true;
         }

@@ -23,11 +23,18 @@ class WishingTree {
         this.treeW = 272 * this.scale; // ~168px
         this.treeH = 320 * this.scale; // ~198px
 
-        // Tải ảnh cây
+        // Tải ảnh cây (Hỗ trợ Cloudflare R2)
+        const treePath = 'assets/Cayuocnguyen/14517.png';
+        const r2TreeUrl = (window.getR2Url ? window.getR2Url(treePath) : treePath);
         this.treeImg = new Image();
         this.treeImgLoaded = false;
         this.treeImg.onload = () => { this.treeImgLoaded = true; };
-        this.treeImg.src = 'assets/Cayuocnguyen/14517.png';
+        this.treeImg.onerror = () => {
+            if (this.treeImg.src === r2TreeUrl && r2TreeUrl !== treePath) {
+                this.treeImg.src = treePath;
+            }
+        };
+        this.treeImg.src = r2TreeUrl;
 
         // Danh sách 25 frames ngọn cây
         this.fxFrameNames = [
@@ -64,12 +71,22 @@ class WishingTree {
     preloadFX() {
         let loaded = 0;
         this.fxImages = this.fxFrameNames.map(name => {
+            const relPath = `assets/Cayuocnguyen/${name}`;
+            const r2Url = (window.getR2Url ? window.getR2Url(relPath) : relPath);
             const img = new Image();
             img.onload = () => {
                 loaded++;
                 if (loaded >= this.fxFrameNames.length) this.fxLoaded = true;
             };
-            img.src = `assets/Cayuocnguyen/${name}`;
+            img.onerror = () => {
+                if (img.src === r2Url && r2Url !== relPath) {
+                    img.src = relPath;
+                } else {
+                    loaded++;
+                    if (loaded >= this.fxFrameNames.length) this.fxLoaded = true;
+                }
+            };
+            img.src = r2Url;
             return img;
         });
     }
@@ -214,11 +231,18 @@ class WishingBoard {
         this.height = 520 * this.scale; // ~86px
         this.globalTime = 0;
 
-        // Tải ảnh bảng ước nguyện đã tách nền chuẩn xác
+        // Tải ảnh bảng ước nguyện đã tách nền chuẩn xác (Hỗ trợ Cloudflare R2)
+        const boardPath = 'assets/Cayuocnguyen/wishing_board.png';
+        const r2BoardUrl = (window.getR2Url ? window.getR2Url(boardPath) : boardPath);
         this.img = new Image();
         this.imgLoaded = false;
         this.img.onload = () => { this.imgLoaded = true; };
-        this.img.src = 'assets/Cayuocnguyen/wishing_board.png';
+        this.img.onerror = () => {
+            if (this.img.src === r2BoardUrl && r2BoardUrl !== boardPath) {
+                this.img.src = boardPath;
+            }
+        };
+        this.img.src = r2BoardUrl;
 
         // Hạt lấp lánh nhẹ nhàng xung quanh bảng
         this.sparkles = [];

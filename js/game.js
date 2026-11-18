@@ -46,13 +46,20 @@ class GameEngine {
         this.classTimer1 = 8.0;
         this.classTimer2 = 3.0;
 
-        // Nạp hình ảnh bản đồ Vector TNU Campus mới
+        // Nạp hình ảnh bản đồ Vector TNU Campus mới (Hỗ trợ Cloudflare R2 + Fallback)
+        const mapUrl = 'assets/map1_campus.jpg';
+        const r2MapUrl = (window.getR2Url ? window.getR2Url(mapUrl) : mapUrl);
         this.map1Image = new Image();
         this.map1ImageLoaded = false;
         this.map1Image.onload = () => {
             this.map1ImageLoaded = true;
         };
-        this.map1Image.src = 'assets/map1_campus.jpg';
+        this.map1Image.onerror = () => {
+            if (this.map1Image.src === r2MapUrl && r2MapUrl !== mapUrl) {
+                this.map1Image.src = mapUrl;
+            }
+        };
+        this.map1Image.src = r2MapUrl;
         if (this.map1Image.complete && this.map1Image.naturalWidth > 0) {
             this.map1ImageLoaded = true;
         }

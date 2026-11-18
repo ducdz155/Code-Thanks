@@ -63,21 +63,37 @@ class FloatingLanternsSystem {
             }
         };
 
-        // Load 16 frames lồng đèn Cung Đình Hoàng Kim
+        // Load 16 frames lồng đèn Cung Đình Hoàng Kim (Hỗ trợ Cloudflare R2)
         this.palaceImages = this.palaceFrameNames.map(name => {
+            const relPath = `assets/Hu/${name}`;
+            const r2Url = (window.getR2Url ? window.getR2Url(relPath) : relPath);
             const img = new Image();
             img.onload = checkDone;
-            img.onerror = checkDone;
-            img.src = `assets/Hu/${name}`;
+            img.onerror = () => {
+                if (img.src === r2Url && r2Url !== relPath) {
+                    img.src = relPath;
+                } else {
+                    checkDone();
+                }
+            };
+            img.src = r2Url;
             return img;
         });
 
-        // Load 8 frames lồng đèn Thỏ Ngọc Đào Tiên
+        // Load 8 frames lồng đèn Thỏ Ngọc Đào Tiên (Hỗ trợ Cloudflare R2)
         this.bunnyImages = this.bunnyFrameNames.map(name => {
+            const relPath = `assets/Hu/${name}`;
+            const r2Url = (window.getR2Url ? window.getR2Url(relPath) : relPath);
             const img = new Image();
             img.onload = checkDone;
-            img.onerror = checkDone;
-            img.src = `assets/Hu/${name}`;
+            img.onerror = () => {
+                if (img.src === r2Url && r2Url !== relPath) {
+                    img.src = relPath;
+                } else {
+                    checkDone();
+                }
+            };
+            img.src = r2Url;
             return img;
         });
     }

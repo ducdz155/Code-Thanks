@@ -2368,12 +2368,12 @@ class RoseBush {
         if (this.state === 'ready') {
             const bloomBob = Math.sin(this.animTimer) * 2;
             
-            // Vẽ đóa hoa từ tài nguyên sticker hình ảnh
+            // Vẽ đóa hoa từ tài nguyên sticker hình ảnh (Hỗ trợ Cloudflare R2)
             if (!RoseBush.imgRed) {
                 RoseBush.imgRed = new Image();
-                RoseBush.imgRed.src = 'assets/items/rose_red.png';
+                RoseBush.imgRed.src = (window.getR2Url ? window.getR2Url('assets/items/rose_red.png') : 'assets/items/rose_red.png');
                 RoseBush.imgWhite = new Image();
-                RoseBush.imgWhite.src = 'assets/items/rose_white.png';
+                RoseBush.imgWhite.src = (window.getR2Url ? window.getR2Url('assets/items/rose_white.png') : 'assets/items/rose_white.png');
             }
             const flowerImg = this.isRare ? RoseBush.imgWhite : RoseBush.imgRed;
             if (flowerImg && flowerImg.complete && flowerImg.naturalWidth > 0) {
@@ -2422,7 +2422,7 @@ class CampusDocument {
 
         if (!CampusDocument.imgDoc) {
             CampusDocument.imgDoc = new Image();
-            CampusDocument.imgDoc.src = 'assets/items/campus_document.png';
+            CampusDocument.imgDoc.src = (window.getR2Url ? window.getR2Url('assets/items/campus_document.png') : 'assets/items/campus_document.png');
         }
         const docImg = CampusDocument.imgDoc;
         if (docImg && docImg.complete && docImg.naturalWidth > 0) {

@@ -214,18 +214,23 @@ class HeadSQLDatabase {
         this.loadedCount = 0;
 
         allUrls.forEach(url => {
+            const r2Url = (window.getR2Url ? window.getR2Url(url) : url);
             const img = new Image();
-            img.src = url;
             img.onload = () => {
                 this.loadedCount++;
                 if (this.loadedCount >= this.totalImages) {
                     this.isLoaded = true;
-                    console.log(`[HeadSQLDB] Đã tải thành công 100% (${this.loadedCount}/${this.totalImages}) frames kiểu đầu.`);
+                    console.log(`[HeadSQLDB] Đã tải thành công 100% (${this.loadedCount}/${this.totalImages}) frames kiểu đầu từ R2.`);
                 }
             };
             img.onerror = () => {
-                console.warn(`[HeadSQLDB] Lỗi nạp texture: ${url}`);
+                if (img.src === r2Url && r2Url !== url) {
+                    img.src = url;
+                } else {
+                    console.warn(`[HeadSQLDB] Lỗi nạp texture: ${url}`);
+                }
             };
+            img.src = r2Url;
             this.imageCache.set(url, img);
         });
     }
@@ -250,13 +255,19 @@ class HeadSQLDatabase {
         return this.tables.head_frames.find(f => f.head_id === headId && f.direction === 'down') || null;
     }
 
-    // Lấy Image object từ cache (Tự động nạp on-demand nếu chưa có)
+    // Lấy Image object từ cache (Tự động nạp on-demand từ Cloudflare R2 nếu chưa có)
     getImage(url) {
         if (!url) return null;
         let img = this.imageCache.get(url);
         if (!img) {
+            const r2Url = (window.getR2Url ? window.getR2Url(url) : url);
             img = new Image();
-            img.src = url;
+            img.onerror = () => {
+                if (img.src === r2Url && r2Url !== url) {
+                    img.src = url;
+                }
+            };
+            img.src = r2Url;
             this.imageCache.set(url, img);
         }
         return img;
