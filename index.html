@@ -41,6 +41,18 @@
         const R2_URL = "https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev";
         window.R2_URL = R2_URL;
 
+        // Tự động nhận diện môi trường:
+        // - Khi chạy local (file:/// hoặc localhost/127.0.0.1): Đọc thẳng từ ổ cứng SSD, tốc độ tức thì < 0.5s, không tốn mạng!
+        // - Khi chạy trên Vercel/Production: Định tuyến qua Cloudflare R2 CDN toàn cầu.
+        const isLocalHost = (
+            window.location.protocol === 'file:' || 
+            window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname === '0.0.0.0' ||
+            window.location.hostname === ''
+        );
+        window.isLocalHost = isLocalHost;
+
         window.getR2Url = function(path) {
             if (!path) return '';
             if (typeof path !== 'string') return path;
@@ -48,15 +60,27 @@
                 return path;
             }
             const clean = path.replace(/^\/+/, '');
+
+            // 1. Nếu đang chạy cục bộ (file:/// hoặc localhost): Dùng ngay file trong máy, không gửi request ra Internet
+            if (window.isLocalHost) {
+                return clean;
+            }
+
+            // 2. Những tài nguyên chưa có trên R2 (như thư mục npc/ và tệp map1_campus.jpg): tải trực tiếp từ máy chủ Vercel
+            if (clean.startsWith('npc/') || clean === 'assets/map1_campus.jpg') {
+                return clean;
+            }
+
+            // 3. Toàn bộ tài nguyên còn lại: tải qua Cloudflare R2 CDN
             return `${window.R2_URL}/${clean}`;
         };
     </script>
 
-    <!-- Preload Critical Assets (Tải trực tiếp siêu tốc từ Cloudflare R2) -->
-    <link rel="preload" as="image" href="https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev/body/skin_shaolin_monk_icon.png">
-    <link rel="preload" as="image" href="https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev/body/skin_obocchaman_icon.png">
-    <link rel="preload" as="image" href="https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev/body/skin_ethnic_maiden_icon.png">
-    <link rel="preload" as="image" href="https://pub-b75a26ccbe194c77b84f600b979a50b5.r2.dev/assets/ui/icons/sound_normal.png">
+    <!-- Preload Critical Assets (Tải ưu tiên 3 skin khởi đầu & icon) -->
+    <link rel="preload" as="image" href="body/skin_shaolin_monk_icon.png">
+    <link rel="preload" as="image" href="body/skin_obocchaman_icon.png">
+    <link rel="preload" as="image" href="body/skin_ethnic_maiden_icon.png">
+    <link rel="preload" as="image" href="assets/ui/icons/sound_normal.png">
 
     <style>
         body {
