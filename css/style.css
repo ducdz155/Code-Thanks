@@ -2430,4 +2430,455 @@ a:active .interactive-icon,
     vertical-align: -3px;
 }
 
+/* ========================================================
+   CUỐN SÁCH TRI ÂN 20/11 - TRƯỜNG ĐẠI HỌC TÂY NGUYÊN (3D BOOK)
+   ======================================================== */
+#tribute-book-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(10, 16, 26, 0.88);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#tribute-book-modal.active,
+#tribute-book-modal.modal-visible {
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.tribute-book-viewport {
+    perspective: 2000px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1060px;
+    position: relative;
+}
+
+.tribute-book-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1024 / 571;
+    max-height: 80vh;
+    border-radius: 14px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 215, 0, 0.25);
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Gáy sách ở giữa & Đổ bóng giữa hai trang */
+.tribute-book-spine {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 49.6%;
+    width: 0.8%;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.15) 50%, rgba(0, 0, 0, 0.45));
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    z-index: 30;
+    pointer-events: none;
+}
+
+.tribute-book-gutter-shadow {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.18) 0%,
+        transparent 5%,
+        transparent 45%,
+        rgba(0, 0, 0, 0.28) 49.5%,
+        rgba(0, 0, 0, 0.28) 50.5%,
+        transparent 55%,
+        transparent 95%,
+        rgba(0, 0, 0, 0.18) 100%
+    );
+    pointer-events: none;
+    z-index: 25;
+}
+
+/* ========================================================
+   CUỐN SÁCH TRI ÂN 20/11 - REALISTIC 3D PAGE FLIP ENGINE
+   ======================================================== */
+.book-flip-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    transform-style: preserve-3d;
+    perspective: 2000px;
+}
+
+/* Tấm trang lật 3D */
+.book-flip-half {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    transform-style: preserve-3d;
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+/* Lật trang SAU (Next: phải qua trái) */
+/* Giai đoạn 1: Nửa phải cũ gập từ ngoài vào gáy sách (0deg -> -90deg) */
+.flip-fold-in-right {
+    left: 50%;
+    transform-origin: left center;
+    background-position: right center;
+    animation: foldInRight 0.22s cubic-bezier(0.4, 0, 0.7, 1) forwards;
+}
+
+@keyframes foldInRight {
+    0% {
+        transform: rotateY(0deg);
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25));
+    }
+    100% {
+        transform: rotateY(-90deg);
+        filter: drop-shadow(-15px 4px 20px rgba(0, 0, 0, 0.6));
+    }
+}
+
+/* Giai đoạn 2: Nửa trái mới mở từ gáy sách ra ngoài trái (90deg -> 0deg) */
+.flip-unfold-out-left {
+    left: 0;
+    transform-origin: right center;
+    background-position: left center;
+    animation: unfoldOutLeft 0.22s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+}
+
+@keyframes unfoldOutLeft {
+    0% {
+        transform: rotateY(90deg);
+        filter: drop-shadow(15px 4px 20px rgba(0, 0, 0, 0.6));
+    }
+    100% {
+        transform: rotateY(0deg);
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25));
+    }
+}
+
+/* Lật trang TRƯỚC (Prev: trái qua phải) */
+/* Giai đoạn 1: Nửa trái cũ gập từ ngoài vào gáy sách (0deg -> 90deg) */
+.flip-fold-in-left {
+    left: 0;
+    transform-origin: right center;
+    background-position: left center;
+    animation: foldInLeft 0.22s cubic-bezier(0.4, 0, 0.7, 1) forwards;
+}
+
+@keyframes foldInLeft {
+    0% {
+        transform: rotateY(0deg);
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25));
+    }
+    100% {
+        transform: rotateY(90deg);
+        filter: drop-shadow(15px 4px 20px rgba(0, 0, 0, 0.6));
+    }
+}
+
+/* Giai đoạn 2: Nửa phải mới mở từ gáy sách ra ngoài phải (-90deg -> 0deg) */
+.flip-unfold-out-right {
+    left: 50%;
+    transform-origin: left center;
+    background-position: right center;
+    animation: unfoldOutRight 0.22s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+}
+
+@keyframes unfoldOutRight {
+    0% {
+        transform: rotateY(-90deg);
+        filter: drop-shadow(-15px 4px 20px rgba(0, 0, 0, 0.6));
+    }
+    100% {
+        transform: rotateY(0deg);
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25));
+    }
+}
+
+/* Lớp bóng đổ trên nếp gấp giấy */
+.book-flip-half::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.flip-fold-in-right::after,
+.flip-unfold-out-right::after {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.35) 0%, rgba(255, 255, 255, 0.2) 20%, transparent 70%);
+}
+
+.flip-fold-in-left::after,
+.flip-unfold-out-left::after {
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.35) 0%, rgba(255, 255, 255, 0.2) 20%, transparent 70%);
+}
+
+/* Các vùng bấm mép sách để lật - Không hiện popup che chữ */
+.book-edge-hotspot {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 12%;
+    z-index: 35;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.book-edge-left {
+    left: 0;
+}
+
+.book-edge-left:hover {
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.08), transparent);
+}
+
+.book-edge-right {
+    right: 0;
+}
+
+.book-edge-right:hover {
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.08), transparent);
+}
+
+/* Typography viết tay cảm xúc */
+.font-handwriting {
+    font-family: 'Dancing Script', 'Patrick Hand', 'Itim', cursive, sans-serif;
+}
+
+.font-tribute-body {
+    font-family: 'Patrick Hand', 'Itim', sans-serif;
+    letter-spacing: 0.2px;
+}
+
+.text-gold-emboss {
+    color: #fff4cc;
+    text-shadow: 
+        0 1px 0 #caa049,
+        0 2px 0 #9f7626,
+        0 3px 5px rgba(0, 0, 0, 0.7),
+        0 0 20px rgba(255, 215, 0, 0.6);
+}
+
+.text-glow-light {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+.text-chalk {
+    color: #f8fafc;
+    font-family: 'Patrick Hand', cursive;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8), 1px 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+/* Hạt hoa, sao & bụi sáng lơ lửng */
+.tribute-floating-particle {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    z-index: 28;
+    animation: floatUpSlow 6s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes floatUpSlow {
+    0% {
+        transform: translateY(0px) rotate(0deg) scale(0.9);
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.9;
+    }
+    85% {
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(-90px) rotate(45deg) scale(1.1);
+        opacity: 0;
+    }
+}
+
+/* ========================================================
+   CUỐN SÁCH TRI ÂN 20/11 - VINTAGE BEIGE HEADER & TOOLBAR
+   ======================================================== */
+.tribute-book-top-bar {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fbf6d9;
+    border: 3px solid #5c4731;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), inset 0 0 10px rgba(180, 150, 100, 0.25);
+    position: relative;
+    user-select: none;
+    font-family: 'Itim', 'Patrick Hand', 'Nunito', cursive, sans-serif;
+    color: #3b2512;
+}
+
+.tribute-book-top-bar::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1.5px solid #7c6348;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.tribute-book-close-btn {
+    position: relative;
+    z-index: 2;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 50%, #fecaca 100%);
+    border: 1.5px solid #b91c1c;
+    border-radius: 8px;
+    color: #991b1b;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+}
+
+.tribute-book-close-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #7f1d1d;
+    transform: scale(1.08);
+}
+
+.tribute-book-control-bar {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fbf6d9;
+    border: 3px solid #5c4731;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), inset 0 0 12px rgba(180, 150, 100, 0.25);
+    position: relative;
+    user-select: none;
+    font-family: 'Itim', 'Patrick Hand', 'Nunito', cursive, sans-serif;
+    color: #3b2512;
+}
+
+.tribute-book-control-bar::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1.5px solid #7c6348;
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+.tribute-book-nav-btn {
+    position: relative;
+    z-index: 2;
+    padding: 7px 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #fdf8ec 50%, #f3e6cd 100%);
+    border: 2px solid #7c6348;
+    border-radius: 10px;
+    color: #3b2512;
+    font-weight: 800;
+    font-family: 'Itim', 'Patrick Hand', 'Nunito', sans-serif;
+    font-size: 13.5px;
+    box-shadow: 0 3px 6px rgba(60, 40, 20, 0.18), inset 0 1px 0 #ffffff;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tribute-book-nav-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, #ffffff 0%, #fff1d4 100%);
+    border-color: #5c4731;
+    transform: translateY(-1.5px);
+    box-shadow: 0 5px 12px rgba(60, 40, 20, 0.25), inset 0 1px 0 #ffffff;
+}
+
+.tribute-book-nav-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(60, 40, 20, 0.2);
+}
+
+.tribute-book-nav-btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    pointer-events: none;
+    filter: grayscale(40%);
+}
+
+.tribute-book-page-pill {
+    position: relative;
+    z-index: 2;
+    background: rgba(240, 227, 204, 0.9);
+    border: 1.5px solid #a88562;
+    border-radius: 9999px;
+    padding: 5px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: inset 0 1px 3px rgba(60, 40, 20, 0.15);
+}
+
+.tribute-book-page-text {
+    font-family: 'Itim', 'Patrick Hand', cursive, sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    color: #4a2c11;
+    letter-spacing: 0.5px;
+}
+
+.tribute-book-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #d4be9e;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.tribute-book-dot:hover {
+    transform: scale(1.3);
+    background: #b48348;
+}
+
+.tribute-book-dot.active {
+    width: 11px;
+    height: 11px;
+    background: #d97706;
+    box-shadow: 0 0 6px rgba(217, 119, 6, 0.7);
+    outline: 2px solid #fef3c7;
+}
+
+
+
 

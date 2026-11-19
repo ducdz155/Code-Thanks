@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo Cáo Thuyết Minh Dự Án - TNU Adventure</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm 18mm 20mm 22mm;
+            @bottom-right {
+                content: counter(page);
+            }
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.35;
+            color: #111111;
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+        }
+        .page {
+            page-break-after: always;
+        }
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 92vh;
+            border: 3px double #8b1e15;
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .cover-header {
+            font-size: 13pt;
+            font-weight: bold;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+        .cover-divider {
+            width: 140px;
+            height: 2px;
+            background: #b91c1c;
+            margin: 15px auto;
+        }
+        .cover-title-box {
+            margin: 40px 0;
+        }
+        .cover-sub-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+        .cover-main-title {
+            font-size: 21pt;
+            font-weight: bold;
+            color: #b91c1c;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+        .cover-desc {
+            font-size: 12.5pt;
+            font-style: italic;
+            color: #4b5563;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .cover-info-table {
+            width: 85%;
+            margin: 30px auto;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 12pt;
+        }
+        .cover-info-table td {
+            padding: 6px 12px;
+        }
+        .cover-info-table td:first-child {
+            font-weight: bold;
+            width: 38%;
+            color: #1f2937;
+        }
+        .cover-footer {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #374151;
+        }
+        h1 {
+            font-size: 15pt;
+            font-weight: bold;
+            color: #991b1b;
+            text-transform: uppercase;
+            border-bottom: 1.5px solid #991b1b;
+            padding-bottom: 4px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        h2 {
+            font-size: 13.5pt;
+            font-weight: bold;
+            color: #1e40af;
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+        p {
+            margin-top: 0;
+            margin-bottom: 8px;
+            text-align: justify;
+            text-indent: 25px;
+        }
+        ul {
+            margin-top: 4px;
+            margin-bottom: 10px;
+            padding-left: 30px;
+        }
+        li {
+            margin-bottom: 5px;
+            text-align: justify;
+        }
+        .figure-box {
+            text-align: center;
+            margin: 14px 0;
+            page-break-inside: avoid;
+        }
+        .figure-box img {
+            max-width: 92%;
+            height: auto;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .figure-caption {
+            font-size: 11pt;
+            font-style: italic;
+            color: #4b5563;
+            margin-top: 6px;
+        }
+        pre {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 10.5pt;
+            font-family: Consolas, monospace;
+            overflow-x: auto;
+            line-height: 1.3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TRANG BÌA -->
+    <div class="cover-page page">
+        <div class="cover-header">
+            BỘ GIÁO DỤC VÀ ĐÀO TẠO<br>
+            TRƯỜNG ĐẠI HỌC TÂY NGUYÊN<br>
+            KHOA CÔNG NGHỆ THÔNG TIN
+            <div class="cover-divider"></div>
+        </div>
+
+        <div class="cover-title-box">
+            <div class="cover-sub-title">BÁO CÁO THUYẾT MINH ĐỒ ÁN GAME GIÁO DỤC TRỰC TUYẾN</div>
+            <div class="cover-main-title">TNU ADVENTURE: ĐÔI CÁNH ĐẠI NGÀN</div>
+            <div class="cover-main-title" style="font-size: 17pt; color: #b45309;">TRI ÂN THẦY CÔ - KỶ NIỆM NGÀY NHÀ GIÁO VIỆT NAM 20/11</div>
+            <p class="cover-desc">
+                Hệ thống Game Nhập vai 2D MMORPG Đa người chơi Trực tuyến tôn vinh truyền thống Tôn Sư Trọng Đạo trên nền tảng Web Canvas & WebSocket Realtime
+            </p>
+        </div>
+
+        <table class="cover-info-table">
+            <tr>
+                <td>Đơn vị thực hiện:</td>
+                <td>Khoa Công Nghệ Thông Tin - Trường ĐH Tây Nguyên</td>
+            </tr>
+            <tr>
+                <td>Chủ đề dự án:</td>
+                <td>Game Giáo Dục Truyền Thống 20/11 - Bản đồ TNU</td>
+            </tr>
+            <tr>
+                <td>Công nghệ cốt lõi:</td>
+                <td>HTML5 Canvas 2.5D, Node.js, WebSocket, Web Audio API</td>
+            </tr>
+            <tr>
+                <td>Thời gian thực hiện:</td>
+                <td>Tháng 11 Năm 2026</td>
+            </tr>
+        </table>
+
+        <div class="cover-footer">
+            ĐẮK LẮK, NĂM HỌC 2026 - 2027
+        </div>
+    </div>
+
+    <!-- NỘI DUNG CHÍNH -->
+    <div class="page">
+        <h1>PHẦN 1: MỞ ĐẦU & TỔNG QUAN DỰ ÁN</h1>
+        <h2>1.1. Lý do chọn đề tài & Bối cảnh lịch sử 20/11</h2>
+        <p>
+            Ngày Nhà giáo Việt Nam 20/11 là ngày lễ hội truyền thống thiêng liêng của ngành giáo dục và toàn xã hội, 
+            nhằm tôn vinh những người hoạt động trong ngành giáo dục và thể hiện truyền thống đạo lý "Tôn sư trọng đạo", "Uống nước nhớ nguồn". 
+            Tại Trường Đại học Tây Nguyên - cái nôi đào tạo nguồn nhân lực chất lượng cao cho vùng Tây Nguyên đại ngàn hùng vĩ, 
+            nhu cầu xây dựng một sản phẩm số sáng tạo, vừa mang tính kết nối cộng đồng sinh viên, vừa giáo dục truyền thống tri ân một cách trực quan, 
+            hiện đại là vô cùng cấp thiết.
+        </p>
+        <p>
+            Dự án "TNU Adventure: Đôi Cánh Đại Ngàn" ra đời nhằm hiện thực hóa không gian trường học và các hoạt động kỷ niệm 20/11 
+            dưới dạng một trò chơi nhập vai phiêu lưu trực tuyến nhiều người chơi (2D MMORPG). Người chơi có thể tự do đi lại trong khuôn viên trường, 
+            chăm sóc hoa hồng, gấp thiệp chúc mừng, bước vào lớp học nghe giảng, tham gia các câu hỏi ôn tập lịch sử 20/11 và tận tay dâng tặng 
+            những bó hoa tươi thắm kính gửi Thầy/Cô.
+        </p>
+
+        <h2>1.2. Mục tiêu nghiên cứu và sản phẩm kỳ vọng</h2>
+        <ul>
+            <li>Xây dựng thế giới ảo sống động mô phỏng các địa danh thực tế của Trường ĐH Tây Nguyên (Nhà Điều Hành, Nhà học số 7, Giảng đường Trung tâm, Thư viện, Vườn hoa sinh thái, Phòng học tri ân).</li>
+            <li>Triển khai cơ chế đồng bộ trực tuyến thời gian thực (Realtime Multiplayer) cho phép nhiều người chơi cùng online, di chuyển, tương tác trang phục, cánh bay và thú cưng (Pet).</li>
+            <li>Xây dựng hệ thống gameplay giáo dục ý nghĩa: Chăm sóc gieo trồng hoa hồng, bàn chế tạo quà tặng, cây ước nguyện trực tuyến, và đặc biệt là Góc ôn tập đố vui 20/11 tại lớp học.</li>
+            <li>Đảm bảo tính thẩm mỹ cao theo phong cách vintage màu be cổ điển, trải nghiệm mượt mà không cần cài đặt (chạy trực tiếp trên trình duyệt Web).</li>
+        </ul>
+
+        <h1>PHẦN 2: KIẾN TRÚC KỸ THUẬT & CÔNG NGHỆ ÁP DỤNG</h1>
+        <h2>2.1. Mô hình kiến trúc Client - Server</h2>
+        <p>
+            Hệ thống được thiết kế theo mô hình Client - Server hướng sự kiện hiện đại, tối ưu hóa tối đa cho các ứng dụng chạy trên trình duyệt web:
+        </p>
+        <ul>
+            <li><b>Frontend (Client):</b> Sử dụng thuần HTML5 Canvas 2D kết hợp với CSS3 phong cách Vintage Comic Beige. Game loop chạy ở tần số quét 60 FPS thông qua API requestAnimationFrame, tính toán delta-time (dt) đảm bảo chuyển động mượt mà trên mọi thiết bị. Quản lý trạng thái bằng kiến trúc Reactive Store gọn nhẹ (Store State Pattern), tự động cập nhật UI khi balo, điểm thiện cảm hoặc trang phục thay đổi.</li>
+            <li><b>Backend (Server):</b> Máy chủ Node.js đa luồng phi phong bế (non-blocking I/O), tích hợp thư viện 'ws' đáp ứng hàng trăm kết nối đồng thời với độ trễ cực thấp (&lt; 30ms). Máy chủ lưu trữ vị trí tọa độ, mã bản đồ (mapId), trang phục, cánh và pet của người chơi, sau đó phát quảng bá (broadcast) tới các client đang ở cùng một bản đồ.</li>
+        </ul>
+
+        <h2>2.2. Cơ chế Đồng bộ Multiplayer trực tuyến an toàn</h2>
+        <p>
+            Hệ thống đồng bộ vị trí và trang phục giữa các người chơi bằng gói tin JSON nhị phân siêu tinh gọn. 
+            Mỗi khi một người chơi di chuyển, đổi cánh bay, đổi thần thú hoặc bước qua cổng dịch chuyển, máy chủ sẽ đồng bộ ngay lập tức. 
+            Đặc biệt, hệ thống heartbeat ping/pong định kỳ 25 giây tự động phát hiện và dọn dẹp các socket mất mạng, kèm theo bộ bọc bắt lỗi toàn cục 
+            (uncaughtException / unhandledRejection) giúp máy chủ không bao giờ bị dừng đột ngột.
+        </p>
+    </div>
+
+    <div class="page">
+        <h1>PHẦN 3: THIẾT KẾ THẾ GIỚI GAME & CÁC BẢN ĐỒ</h1>
+        <h2>3.1. Bản đồ Vườn Hoa Hồng Sinh Thái (Map 2)</h2>
+        <p>
+            Bản đồ nông trại 1280 x 720 pixel mô phỏng vườn ươm thực nghiệm Tây Nguyên. 
+            Bao gồm 10 luống đất màu mỡ, vòi nước suối mát lành, tiệm hạt giống và xe rùa chở đất. 
+            Đã xử lý dứt điểm lỗi che khuất tiền cảnh, đảm bảo nhân vật và hàng rào hiển thị hài hòa, chân thực.
+        </p>
+        <div class="figure-box">
+            <img src="doc_assets/rose_garden.jpg" alt="Vườn hoa hồng sinh thái">
+            <div class="figure-caption">Hình 1: Vườn hoa hồng sinh thái sau khi khắc phục tiền cảnh và tinh gọn thanh điều hướng</div>
+        </div>
+
+        <h2>3.2. Bản đồ Lớp Học Tri Ân 20/11 (Map 5 - Tính năng mới)</h2>
+        <p>
+            Nằm tại sảnh chính Nhà Học Số 7, Lớp học Tri ân 20/11 được thiết kế với kích thước chuẩn 1280 x 720 pixel: 
+            Phía trên là bục giảng trang trọng với bảng phấn ghi dòng chữ thiêng liêng "20/11 Ngày Nhà Giáo Việt Nam", bàn giáo viên cắm hoa tươi, 
+            tủ sách tri thức và ánh nắng sớm chiếu rọi qua khung cửa sổ. 
+            Giữa phòng là 2 dãy gồm 6 bàn học sinh (khối vật cản đen) cùng 6 ghế ngồi tương tác (vòng ma pháp đỏ).
+        </p>
+        <div class="figure-box">
+            <img src="doc_assets/classroom_overview.jpg" alt="Lớp học tri ân">
+            <div class="figure-caption">Hình 2: Không gian Lớp học Tri ân 20/11 với Cô giáo trên bục giảng và 6 vị trí bàn học đố vui</div>
+        </div>
+    </div>
+
+    <div class="page">
+        <h1>PHẦN 4: HỆ THỐNG GAMEPLAY & TƯƠNG TÁC ĐẶC SẮC</h1>
+        <h2>4.1. Cơ chế Tặng hoa & Đổi Frame Cô Giáo Rạng Rỡ</h2>
+        <p>
+            Khi người chơi tiến lại gần Cô giáo trên bục giảng và bấm [E], khung đối thoại phong cách cổ điển màu be sẽ hiện lên. 
+            Người chơi có thể xem trong Balo và lựa chọn dâng tặng: Bó Hoa Hồng Tây Nguyên (+35 Thiện Cảm), Đóa Hoa Hồng Đỏ (+15 Thiện Cảm) 
+            hoặc Hộp Quà Lễ Hội May Mắn (+25 Thiện Cảm).
+        </p>
+        <div class="figure-box">
+            <img src="doc_assets/teacher_dialogue.jpg" alt="Hộp thoại Cô giáo">
+            <div class="figure-caption">Hình 3: Giao diện đối thoại màu be ấm áp và tùy chọn dâng hoa kính tặng Cô giáo</div>
+        </div>
+        <p>
+            Đặc biệt, ngay sau khi nhận hoa, Cô giáo sẽ lập tức chuyển đổi frame (Frame 1 dịu dàng ➔ Frame 2 ôm bó hoa hồng đỏ tươi cười hạnh phúc 
+            với các hạt trái tim lung linh bay lên). Trạng thái nhận hoa được lưu trữ bền vững trong suốt phiên chơi.
+        </p>
+        <div class="figure-box">
+            <img src="doc_assets/teacher_frame_switched.jpg" alt="Cô giáo đổi frame">
+            <div class="figure-caption">Hình 4: Cô giáo chuyển sang Frame rạng rỡ ôm bó hoa hồng và thanh thiện cảm tăng trưởng</div>
+        </div>
+    </div>
+
+    <div class="page">
+        <h2>4.2. Góc Ôn Tập & Đố Vui 20/11 tại 6 Bàn Học Sinh</h2>
+        <p>
+            Khi người chơi bước vào vùng ghế ngồi (vùng đỏ theo bản vẽ thiết kế), hệ thống sẽ hiển thị gợi ý phím 3D: [E] Ngồi Ôn Tập & Đố Vui 20/11. 
+            Giao diện trắc nghiệm mở ra với 10 câu hỏi lịch sử sâu sắc xoay quanh: Nguồn gốc Ngày Nhà giáo VN 1982, truyền thống Tôn sư trọng đạo, 
+            các tác phẩm văn học nghệ thuật tri ân thầy cô và niềm tự hào Đại học Tây Nguyên.
+        </p>
+        <div class="figure-box">
+            <img src="doc_assets/quiz_answered.jpg" alt="Đố vui 20/11">
+            <div class="figure-caption">Hình 5: Giao diện Đố vui 20/11 phản hồi kết quả và trao thưởng điểm thiện cảm trực quan</div>
+        </div>
+
+        <h2>4.3. Tủ đồ Thời Trang, Cánh Bay & Thần Thú Pet</h2>
+        <p>
+            Người chơi có thể tùy biến diện mạo bằng 10 loại cánh bay truyền thuyết (Cánh Thiên Thần, Cánh Băng, Cánh Rồng, Cánh Phượng Hoàng) 
+            và thú cưng đồng hành (Thần Long Đông Hải, Mèo Chibi, Kỳ Lân). 
+            Các tab chức năng được nâng cấp hoàn toàn với icon frame tùy biến (chuyển sang frame phát sáng khi click).
+        </p>
+        <div class="figure-box">
+            <img src="doc_assets/wardrobe_tabs.jpg" alt="Tủ đồ">
+            <div class="figure-caption">Hình 6: Giao diện Tủ đồ thời trang với các tab icon frame chuyển đổi linh hoạt</div>
+        </div>
+    </div>
+
+    <div class="page">
+        <h1>PHẦN 5: HƯỚNG DẪN CÀI ĐẶT & TRIỂN KHAI HOSTING ONLINE</h1>
+        <h2>5.1. Khởi chạy thử nghiệm tại Localhost</h2>
+        <ol>
+            <li>Cài đặt môi trường runtime: Node.js phiên bản 18 LTS trở lên.</li>
+            <li>Mở cửa sổ dòng lệnh tại thư mục dự án và cài đặt gói WebSocket: <code>npm install ws</code></li>
+            <li>Khởi động máy chủ: <code>node server.js</code></li>
+            <li>Mở trình duyệt và truy cập: <code>http://localhost:8088</code></li>
+        </ol>
+
+        <h2>5.2. Hướng dẫn triển khai lên VPS / Cloud Server (Ubuntu / Nginx)</h2>
+        <p>
+            Để đưa game lên mạng Internet cho toàn thể sinh viên và giảng viên truy cập cùng lúc, thực hiện theo các bước chuẩn sau:
+        </p>
+        <ul>
+            <li><b>Bước 1 (Quản lý tiến trình vĩnh viễn):</b> Cài đặt PM2 trên máy chủ Linux: <code>npm install -g pm2</code>; sau đó chạy: <code>pm2 start server.js --name tnu-adventure; pm2 save; pm2 startup</code>.</li>
+            <li><b>Bước 2 (Cấu hình Nginx Reverse Proxy & WebSocket SSL):</b> Trong file cấu hình <code>/etc/nginx/sites-available/default</code>:</li>
+        </ul>
+        <pre>server {
+    listen 80;
+    server_name yourdomain.edu.vn;
+
+    location / {
+        proxy_pass http://127.0.0.1:8088;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}</pre>
+        <ul>
+            <li><b>Bước 3 (Cấp chứng chỉ bảo mật HTTPS miễn phí):</b> Cài đặt Certbot: <code>sudo certbot --nginx -d yourdomain.edu.vn</code>. Sau khi có SSL, kết nối WebSocket sẽ tự động mã hóa an toàn qua <code>wss://</code>.</li>
+        </ul>
+
+        <h1>PHẦN 6: KẾT LUẬN & HƯỚNG PHÁT TRIỂN</h1>
+        <p>
+            Dự án "TNU Adventure: Đôi Cánh Đại Ngàn" đã hoàn thành xuất sắc tất cả các mục tiêu đề ra: 
+            Tạo nên một không gian trực tuyến ấm áp, đậm đà bản sắc Tây Nguyên, gắn kết sinh viên và thầy cô qua những hành động tri ân chân thực. 
+            Trò chơi sở hữu hiệu năng vận hành ổn định, đồ họa chuẩn nét, không gian đa chiều và khả năng mở rộng phong phú.
+        </p>
+        <p>
+            Trong các phiên bản tiếp theo, dự án có thể mở rộng thêm: 
+            Hệ thống Minigame thi đấu đối kháng kiến thức theo khoa viện, tích hợp thư viện điện tử để sinh viên đọc giáo trình trực tiếp trong phòng học, 
+            và kết nối cổng thông tin đào tạo nhằm cấp huy hiệu vinh danh cho các sinh viên có thành tích học tập xuất sắc.
+        </p>
+    </div>
+
+</body>
+</html>

@@ -152,13 +152,15 @@
 
             // 6 Ghế học sinh (Vùng màu đỏ theo Ảnh 3)
             this.quizChairs = [
-                { id: 1, x: 480, y: 365, desk: 'Bàn số 1' },
-                { id: 2, x: 462, y: 466, desk: 'Bàn số 2' },
-                { id: 3, x: 444, y: 567, desk: 'Bàn số 3' },
-                { id: 4, x: 790, y: 365, desk: 'Bàn số 4' },
-                { id: 5, x: 795, y: 466, desk: 'Bàn số 5' },
-                { id: 6, x: 805, y: 567, desk: 'Bàn số 6' }
+                { id: 1, x: 487, y: 390, desk: 'Bàn số 1' },
+                { id: 2, x: 467, y: 505, desk: 'Bàn số 2' },
+                { id: 3, x: 446, y: 615, desk: 'Bàn số 3' },
+                { id: 4, x: 795, y: 390, desk: 'Bàn số 4' },
+                { id: 5, x: 815, y: 505, desk: 'Bàn số 5' },
+                { id: 6, x: 835, y: 615, desk: 'Bàn số 6' }
             ];
+            this.lastSteppedChairId = null;
+            this.justClosedCooldown = 0;
 
             // Trạng thái câu hỏi hiện tại
             this.activeChair = null;
@@ -248,15 +250,34 @@
                 });
             }
 
-            // Kiểm tra vị trí người chơi gần ghế ngồi nào
+            if (this.justClosedCooldown > 0) {
+                this.justClosedCooldown -= dt;
+            }
+
+            // Kiểm tra vị trí người chơi gần ghế ngồi nào (Vùng màu đỏ theo Ảnh 3)
             if (player) {
-                this.activeChair = null;
+                let insideChair = null;
                 for (const chair of this.quizChairs) {
                     const dist = Math.hypot(player.x - chair.x, player.y - chair.y);
-                    if (dist < 42) {
-                        this.activeChair = chair;
+                    if (dist < 46) {
+                        insideChair = chair;
                         break;
                     }
+                }
+                this.activeChair = insideChair;
+
+                // Tự động mở câu hỏi 20/11 khi người chơi bước vào vùng màu đỏ
+                if (insideChair) {
+                    if (this.justClosedCooldown <= 0 && this.lastSteppedChairId !== insideChair.id) {
+                        this.lastSteppedChairId = insideChair.id;
+                        const modal = document.getElementById('classroom-quiz-modal');
+                        const isModalOpen = modal && (modal.classList.contains('active') || modal.classList.contains('modal-visible') || modal.style.display === 'flex');
+                        if (!isModalOpen) {
+                            this.openQuizModal();
+                        }
+                    }
+                } else {
+                    this.lastSteppedChairId = null;
                 }
             }
         }
@@ -501,15 +522,17 @@
         // HỆ THỐNG MODAL ĐỐ VUI 20/11 (VINTAGE BEIGE COMIC STYLE)
         // ========================================================
         ensureQuizModal() {
-            if (document.getElementById('classroom-quiz-modal')) return;
+            let modal = document.getElementById('classroom-quiz-modal');
+            if (modal) return;
 
-            const modal = document.createElement('div');
+            modal = document.createElement('div');
             modal.id = 'classroom-quiz-modal';
             modal.className = 'modal-overlay';
+            modal.style.display = 'none';
             modal.innerHTML = `
-                <div class="modal-box modal-box-beige w-[720px] max-w-[95vw] shadow-2xl font-quest">
+                <div class="modal-box modal-box-beige w-[720px] max-w-[95vw] max-h-[92vh] flex flex-col shadow-2xl font-quest">
                     <!-- Header -->
-                    <div class="modal-header-beige">
+                    <div class="modal-header-beige shrink-0 flex items-center justify-between">
                         <div class="flex items-center space-x-2.5">
                             <span class="text-2xl drop-shadow">🏫</span>
                             <div>
@@ -517,11 +540,11 @@
                                 <p class="text-xs text-[#7c6348]">Trường Đại Học Tây Nguyên - Ngày Nhà Giáo Việt Nam</p>
                             </div>
                         </div>
-                        <button class="quest-modal-close-btn font-quest" onclick="window.classroomManager.closeQuizModal()">&times;</button>
+                        <button class="quest-modal-close-btn font-quest cursor-pointer" onclick="window.classroomManager.closeQuizModal()">&times;</button>
                     </div>
 
                     <!-- Body -->
-                    <div class="p-5 space-y-4">
+                    <div class="p-4 sm:p-5 space-y-3.5 overflow-y-auto flex-1">
                         <!-- Progress banner -->
                         <div class="flex items-center justify-between px-4 py-2.5 bg-[#f5ebd2] rounded-xl border border-[#7c6348]/40 text-xs font-bold text-[#4a3520]">
                             <span id="quiz-question-counter">Câu hỏi 1 / 10</span>
@@ -539,21 +562,29 @@
                         </div>
 
                         <!-- Feedback / Explanation Box -->
-                        <div id="quiz-feedback-box" class="p-3.5 rounded-xl border text-xs font-bold leading-relaxed hidden">
+                        <div id="quiz-feedback-box" class="p-3.5 rounded-xl border text-xs font-bold leading-relaxed" style="display: none;">
                         </div>
+                    </div>
 
-                        <!-- Footer actions -->
-                        <div class="flex items-center justify-between pt-2 border-t border-[#7c6348]/30">
-                            <button class="px-4 py-2 bg-[#f4ebe1] hover:bg-[#e8dcce] text-[#4a3520] border-2 border-[#7c6348] rounded-xl text-xs font-bold font-quest transition-all" onclick="window.classroomManager.closeQuizModal()">
-                                🚪 Đứng Dậy Rời Bàn
-                            </button>
-                            <button id="quiz-next-btn" class="quest-image2-btn font-quest text-xs font-bold py-2 px-5 hidden" onclick="window.classroomManager.nextQuestion()">
-                                Câu Tiếp Theo ➔
-                            </button>
-                        </div>
+                    <!-- Footer actions (Pinned at bottom) -->
+                    <div class="p-3.5 sm:px-5 border-t border-[#7c6348]/30 flex items-center justify-between bg-[#fbf6ea] shrink-0 rounded-b-2xl">
+                        <button id="quiz-leave-btn" class="px-4 py-2.5 bg-[#f4ebe1] hover:bg-[#e8dcce] active:scale-95 text-[#4a3520] border-2 border-[#7c6348] rounded-xl text-xs sm:text-sm font-bold font-quest transition-all shadow-sm cursor-pointer flex items-center gap-1.5" onclick="window.classroomManager.closeQuizModal()">
+                            🚪 Đứng Dậy Rời Bàn
+                        </button>
+                        <button id="quiz-next-btn" class="quest-image2-btn font-quest text-xs sm:text-sm font-bold py-2.5 px-6 shadow-md transition-all cursor-pointer flex items-center gap-2" style="display: none;" onclick="window.classroomManager.nextQuestion()">
+                            <span>Câu Tiếp Theo ➔</span>
+                        </button>
                     </div>
                 </div>
             `;
+
+            // Click ngoài overlay để đóng
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeQuizModal();
+                }
+            });
+
             document.body.appendChild(modal);
         }
 
@@ -562,27 +593,48 @@
             const modal = document.getElementById('classroom-quiz-modal');
             if (!modal) return;
 
-            // Chọn ngẫu nhiên hoặc bắt đầu từ câu chưa trả lời
+            modal.style.display = 'flex';
+            modal.classList.add('active');
+            modal.classList.add('modal-visible');
+
+            // Bắt đầu từ câu ngẫu nhiên
             this.currentQuestionIdx = Math.floor(Math.random() * QUIZ_QUESTIONS.length);
             this.hasAnswered = false;
             this.selectedAnswer = null;
 
             this.renderCurrentQuestion();
 
-            if (window.uiManager && window.uiManager.openModal) {
+            if (window.uiManager && typeof window.uiManager.openModal === 'function') {
                 window.uiManager.openModal(modal);
-            } else {
-                modal.classList.add('active');
             }
         }
 
         closeQuizModal() {
             const modal = document.getElementById('classroom-quiz-modal');
-            if (!modal) return;
-            if (window.uiManager && window.uiManager.closeModal) {
-                window.uiManager.closeModal(modal);
-            } else {
+            if (modal) {
                 modal.classList.remove('active');
+                modal.classList.remove('modal-visible');
+                modal.style.display = 'none';
+            }
+            if (window.uiManager && typeof window.uiManager.closeAllModals === 'function') {
+                window.uiManager.closeAllModals();
+            }
+
+            // Di chuyển nhân vật bước nhẹ ra lối đi (rời khỏi ghế về hành lang giữa x: 640)
+            if (window.gameInstance && window.gameInstance.player) {
+                const p = window.gameInstance.player;
+                p.x = 640;
+                if (p.y < 350) p.y = 265;
+                else if (p.y < 480) p.y = 440;
+                else p.y = 580;
+            }
+
+            this.activeChair = null;
+            this.lastSteppedChairId = null;
+            this.justClosedCooldown = 2.0; // Cooldown 2s không tự mở lại
+
+            if (window.soundSystem && typeof window.soundSystem.playStep === 'function') {
+                window.soundSystem.playStep();
             }
         }
 
@@ -599,10 +651,13 @@
             if (counterEl) counterEl.innerText = `Câu số ${this.currentQuestionIdx + 1} / ${QUIZ_QUESTIONS.length}`;
             if (textEl) textEl.innerText = qData.q;
             if (feedbackEl) {
-                feedbackEl.className = 'hidden';
+                feedbackEl.style.display = 'none';
+                feedbackEl.className = 'p-3.5 rounded-xl border text-xs font-bold leading-relaxed';
                 feedbackEl.innerText = '';
             }
-            if (nextBtn) nextBtn.classList.add('hidden');
+            if (nextBtn) {
+                nextBtn.style.display = 'none';
+            }
 
             this.hasAnswered = false;
             choicesEl.innerHTML = '';
@@ -610,7 +665,7 @@
             const prefixes = ['A', 'B', 'C', 'D'];
             qData.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = 'w-full p-3 bg-[#ffffff] hover:bg-[#fff9e6] border-2 border-[#7c6348] rounded-xl text-left font-quest text-sm font-bold text-[#3b2512] transition-all flex items-center justify-between shadow-sm group';
+                btn.className = 'w-full p-3 bg-[#ffffff] hover:bg-[#fff9e6] border-2 border-[#7c6348] rounded-xl text-left font-quest text-sm font-bold text-[#3b2512] transition-all flex items-center justify-between shadow-sm group cursor-pointer';
                 btn.innerHTML = `
                     <div class="flex items-center gap-3">
                         <span class="w-6 h-6 rounded-full bg-[#fbf6d9] border border-[#7c6348] flex items-center justify-center text-xs text-[#8c3b12] group-hover:bg-[#fde047]">${prefixes[idx]}</span>
@@ -637,36 +692,58 @@
 
             buttons.forEach((btn, idx) => {
                 btn.disabled = true;
+                btn.classList.remove('cursor-pointer');
                 if (idx === qData.correct) {
                     btn.className = 'w-full p-3 bg-[#dcfce7] border-2 border-[#16a34a] rounded-xl text-left font-quest text-sm font-bold text-[#14532d] shadow flex items-center justify-between';
-                    btn.innerHTML += '<span class="text-sm">✅ ĐÚNG</span>';
+                    btn.innerHTML += '<span class="text-sm font-bold text-[#15803d]">✅ ĐÚNG</span>';
                 } else if (idx === choiceIdx && !isCorrect) {
                     btn.className = 'w-full p-3 bg-[#fee2e2] border-2 border-[#dc2626] rounded-xl text-left font-quest text-sm font-bold text-[#7f1d1d] shadow flex items-center justify-between';
-                    btn.innerHTML += '<span class="text-sm">❌ SAI</span>';
+                    btn.innerHTML += '<span class="text-sm font-bold text-[#b91c1c]">❌ SAI</span>';
                 } else {
                     btn.className = 'w-full p-3 bg-[#f3f4f6] border border-[#d1d5db] rounded-xl text-left font-quest text-sm text-[#9ca3af] opacity-60';
                 }
             });
 
             if (feedbackEl) {
-                feedbackEl.classList.remove('hidden');
+                feedbackEl.style.display = 'block';
                 if (isCorrect) {
                     feedbackEl.className = 'p-3.5 bg-[#dcfce7] border-2 border-[#16a34a] rounded-xl text-xs font-bold text-[#14532d] leading-relaxed block';
                     feedbackEl.innerHTML = `🎉 <b>CHÍNH XÁC!</b> ${qData.explain}<br><span class="text-emerald-700 font-extrabold mt-1 inline-block">🎁 Thưởng: +20 Xu Sinh Viên & +10 Điểm Thiện Cảm!</span>`;
                     
-                    // Thưởng điểm
-                    if (window.useGameStore) {
-                        window.useGameStore.addItem('student_coins', 20);
-                        window.useGameStore.addAffection(10);
+                    // Thưởng điểm an toàn tuyệt đối
+                    try {
+                        if (window.useGameStore && typeof window.useGameStore.addItem === 'function') {
+                            window.useGameStore.addItem('student_coins', 20);
+                        }
+                        if (window.useGameStore && typeof window.useGameStore.addAffection === 'function') {
+                            window.useGameStore.addAffection(10);
+                        }
+                    } catch (e) {
+                        console.warn('Lỗi thưởng điểm:', e);
                     }
-                    if (window.soundSystem) window.soundSystem.playSuccess();
+
+                    // Âm thanh an toàn tuyệt đối
+                    try {
+                        if (window.soundSystem) {
+                            if (typeof window.soundSystem.playClawSuccess === 'function') {
+                                window.soundSystem.playClawSuccess();
+                            } else if (typeof window.soundSystem.playAffectionGain === 'function') {
+                                window.soundSystem.playAffectionGain();
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Lỗi âm thanh:', e);
+                    }
                 } else {
                     feedbackEl.className = 'p-3.5 bg-[#fef2f2] border-2 border-[#ef4444] rounded-xl text-xs font-bold text-[#991b1b] leading-relaxed block';
                     feedbackEl.innerHTML = `💡 <b>CHƯA CHÍNH XÁC!</b> ${qData.explain}<br><span class="text-amber-800 font-extrabold mt-1 inline-block">Hãy tiếp tục ôn tập câu sau để nhận thưởng nhé!</span>`;
                 }
             }
 
-            if (nextBtn) nextBtn.classList.remove('hidden');
+            // Hiện nút "Câu Tiếp Theo ➔"
+            if (nextBtn) {
+                nextBtn.style.display = 'inline-flex';
+            }
         }
 
         nextQuestion() {

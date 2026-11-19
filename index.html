@@ -29,7 +29,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&family=Itim&family=Mali:wght@600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&family=Itim&family=Mali:wght@600;700;800&family=Patrick+Hand&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
@@ -66,8 +66,16 @@
                 return clean;
             }
 
-            // 2. Những tài nguyên chưa có trên R2 (như thư mục npc/ và tệp map1_campus.jpg): tải trực tiếp từ máy chủ Vercel, tránh nghẽn lỗi 404
-            if (clean.startsWith('npc/') || clean === 'assets/map1_campus.jpg' || clean.startsWith('assets/game_zone')) {
+            // 2. Những tài nguyên chưa có trên R2 (như thư mục npc/, tệp map1_campus.jpg, sách tri ân và lớp học 20/11): tải trực tiếp từ máy chủ hosting, tránh nghẽn lỗi 404
+            if (
+                clean.startsWith('npc/') || 
+                clean === 'assets/map1_campus.jpg' || 
+                clean.startsWith('assets/game_zone') ||
+                clean.startsWith('assets/book') ||
+                clean.startsWith('assets/page_') ||
+                clean.startsWith('assets/flip_') ||
+                clean.startsWith('assets/classroom')
+            ) {
                 return clean;
             }
 
@@ -1265,6 +1273,7 @@
     <script src="js/rose_garden.js?v=20261117_2"></script>
     <script src="js/game_zone.js?v=20261117_2"></script>
     <script src="js/classroom.js?v=20261119_1"></script>
+    <script src="js/tribute_book.js?v=20261119_1"></script>
 
     <script>
         // ========================================================

@@ -193,7 +193,7 @@ const MAPS_DATA = {
                 cx: 1080, cy: 3020,
                 radius: 30,
                 targetMap: 'map5_classroom',
-                targetSpawn: { x: 505, y: 490 },
+                targetSpawn: { x: 640, y: 580 },
                 label: '🏫 Lớp Học Tri Ân 20/11',
                 theme: 'classroom',
                 color: '#f59e0b',
@@ -350,7 +350,7 @@ const MAPS_DATA = {
         nameKey: 'map5_name',
         width: 1280,
         height: 720,
-        spawnPoint: { x: 640, y: 640 }, // Bước vào từ cửa chính ở dưới đáy
+        spawnPoint: { x: 640, y: 580 }, // Lối đi chính giữa hai dãy bàn học sinh, hoàn toàn thông thoáng
         bgImage: 'assets/classroom/classroom_bg.png',
         portals: [
             {
@@ -359,7 +359,7 @@ const MAPS_DATA = {
                 cx: 640, cy: 685,
                 radius: 40,
                 targetMap: 'map1_tnu',
-                targetSpawn: { x: 1080, y: 3030 },
+                targetSpawn: { x: 1080, y: 2950 },
                 label: '🏛️ Ra Sân Trường TNU',
                 theme: 'tnu',
                 isCirclePortal: true,
@@ -368,29 +368,29 @@ const MAPS_DATA = {
             }
         ],
         collisionBoxes: [
-            // 1. Tường bao quanh phòng học
-            { id: 'tuong_tren', label: 'Tường trên & Bục giảng', x: 0, y: 0, width: 1280, height: 235 },
-            { id: 'tuong_trai', label: 'Tường trái & Cửa sổ', x: 0, y: 0, width: 170, height: 720 },
-            { id: 'tuong_phai', label: 'Tường phải & Cửa ra vào', x: 1080, y: 0, width: 200, height: 720 },
-            { id: 'tuong_duoi_trai', label: 'Tường dưới trái', x: 0, y: 655, width: 540, height: 65 },
-            { id: 'tuong_duoi_phai', label: 'Tường dưới phải', x: 740, y: 655, width: 540, height: 65 },
+            // 1. Tường bao quanh phòng học & bục giảng
+            { id: 'tuong_tren', label: 'Tường trên & Bảng đen', x: 0, y: 0, width: 1280, height: 210 },
+            { id: 'tuong_trai', label: 'Tường trái & Cửa sổ', x: 0, y: 0, width: 160, height: 720 },
+            { id: 'tuong_phai', label: 'Tường phải & Cửa ra vào', x: 1090, y: 0, width: 190, height: 720 },
+            { id: 'tuong_duoi_trai', label: 'Tường dưới trái', x: 0, y: 660, width: 540, height: 60 },
+            { id: 'tuong_duoi_phai', label: 'Tường dưới phải', x: 740, y: 660, width: 540, height: 60 },
             
             // 2. Nội thất bục giảng & Bàn giáo viên
-            { id: 'ban_giao_vien', label: 'Bàn giáo viên', x: 795, y: 220, width: 140, height: 70 },
+            { id: 'ban_giao_vien', label: 'Bàn giáo viên', x: 795, y: 225, width: 140, height: 80 },
             { id: 'tu_sach_tren', label: 'Tủ sách trên', x: 925, y: 190, width: 110, height: 95 },
             { id: 'tu_sach_duoi', label: 'Tủ sách dưới', x: 1055, y: 440, width: 125, height: 155 },
             { id: 'chau_cay_trai', label: 'Chậu cây góc dưới trái', x: 60, y: 560, width: 95, height: 95 },
             { id: 'chau_cay_phai', label: 'Chậu cây góc dưới phải', x: 1105, y: 560, width: 95, height: 95 },
 
-            // 3. 6 Bàn học sinh (Phần hình vuông đen theo ảnh 3 của người dùng)
+            // 3. 6 Bàn học sinh (Phần hình vuông đen theo ảnh 3 của người dùng - chuẩn xác từng pixel)
             // Cột trái
-            { id: 'ban_hoc_sinh_1', label: 'Bàn học 1 (Trái trên)', x: 425, y: 288, width: 120, height: 58 },
-            { id: 'ban_hoc_sinh_2', label: 'Bàn học 2 (Trái giữa)', x: 400, y: 385, width: 125, height: 60 },
-            { id: 'ban_hoc_sinh_3', label: 'Bàn học 3 (Trái dưới)', x: 375, y: 485, width: 135, height: 65 },
+            { id: 'ban_hoc_sinh_1', label: 'Bàn học 1 (Trái trên)', x: 435, y: 310, width: 110, height: 50 },
+            { id: 'ban_hoc_sinh_2', label: 'Bàn học 2 (Trái giữa)', x: 415, y: 418, width: 117, height: 54 },
+            { id: 'ban_hoc_sinh_3', label: 'Bàn học 3 (Trái dưới)', x: 388, y: 520, width: 130, height: 60 },
             // Cột phải
-            { id: 'ban_hoc_sinh_4', label: 'Bàn học 4 (Phải trên)', x: 730, y: 288, width: 120, height: 58 },
-            { id: 'ban_hoc_sinh_5', label: 'Bàn học 5 (Phải giữa)', x: 738, y: 385, width: 125, height: 60 },
-            { id: 'ban_hoc_sinh_6', label: 'Bàn học 6 (Phải dưới)', x: 745, y: 485, width: 132, height: 65 }
+            { id: 'ban_hoc_sinh_4', label: 'Bàn học 4 (Phải trên)', x: 740, y: 310, width: 110, height: 50 },
+            { id: 'ban_hoc_sinh_5', label: 'Bàn học 5 (Phải giữa)', x: 752, y: 418, width: 116, height: 54 },
+            { id: 'ban_hoc_sinh_6', label: 'Bàn học 6 (Phải dưới)', x: 765, y: 520, width: 130, height: 60 }
         ]
     }
 };

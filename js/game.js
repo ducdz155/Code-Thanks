@@ -144,6 +144,12 @@ class GameEngine {
             const worldY = screenY + this.camera.y;
 
             const currentMapId = window.useGameStore.state.currentMapId;
+            if (currentMapId === 'map1_tnu' && window.tributeBookManager) {
+                if (Math.hypot(worldX - window.tributeBookManager.worldX, worldY - window.tributeBookManager.worldY) < 60) {
+                    window.tributeBookManager.openBook();
+                    return;
+                }
+            }
             if (currentMapId === 'map1_tnu' && window.wishingManager) {
                 if (window.wishingManager.checkClick(worldX, worldY)) {
                     return;
@@ -478,6 +484,9 @@ class GameEngine {
             if (window.wishingManager) {
                 window.wishingManager.update(dt);
             }
+            if (window.tributeBookManager) {
+                window.tributeBookManager.update(dt, this.player);
+            }
         } else if (currentMapId === 'map2_rose') {
             this.mapEntities.map2_rose.bushes.forEach(b => b.update(dt));
         }
@@ -559,6 +568,11 @@ class GameEngine {
         }
 
         if (currentMapId === 'map1_tnu') {
+            // Cuốn Sách Tri Ân 20/11 - Bấm E để mở sách tương tác toàn màn hình
+            if (window.tributeBookManager && window.tributeBookManager.checkInteract(px, py)) {
+                return;
+            }
+
             // Tương tác Cây Ước Nguyện & Bảng Ước Nguyện 20/11
             if (window.wishingManager && window.wishingManager.checkInteraction(this.player)) {
                 return;
@@ -730,6 +744,10 @@ class GameEngine {
             // Cây Ước Nguyện & Bảng Ước Nguyện 20/11 (assets/Cayuocnguyen)
             if (window.wishingManager) {
                 window.wishingManager.draw(ctx, this.player);
+            }
+            // Cuốn Sách Tri Ân 20/11 - Trường Đại Học Tây Nguyên
+            if (window.tributeBookManager) {
+                window.tributeBookManager.renderWorld(ctx, this.player);
             }
         } else if (currentMapId === 'map2_rose') {
             this.mapEntities.map2_rose.bushes.forEach(b => {
