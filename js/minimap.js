@@ -72,7 +72,8 @@ class MinimapSystem {
             { id: 'med', name: '⚕️ Khoa Y Dược TNU', desc: 'Khối ngành y sinh học', x: 2180, y: 2370, color: '#118ab2' },
             { id: 'dorm', name: '🛏️ Ký Túc Xá Đông Bắc', desc: 'Khu lưu xá sinh viên', x: 1640, y: 250, color: '#8338ec' },
             { id: 'portal_rose', name: '🌹 Điểm Dịch Chuyển Vườn Hoa Hồng', desc: 'Hái hoa hồng & làm quà', x: 2435, y: 2860, color: '#ff4d6d' },
-            { id: 'portal_arcade', name: '🎡 Điểm Dịch Chuyển Khu Vui Chơi', desc: 'Khu hội chợ trò chơi giải trí', x: 2415, y: 3040, color: '#06d6a0' }
+            { id: 'portal_arcade', name: '🎡 Điểm Dịch Chuyển Khu Vui Chơi', desc: 'Khu hội chợ trò chơi giải trí', x: 2415, y: 3040, color: '#06d6a0' },
+            { id: 'portal_classroom', name: '🏫 Lớp Học Tri Ân 20/11', desc: 'Lớp học tri ân, tặng hoa Cô giáo & đố vui', x: 1080, y: 3020, color: '#f59e0b' }
         ];
     }
 

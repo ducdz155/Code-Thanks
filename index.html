@@ -66,7 +66,12 @@
                 return clean;
             }
 
-            // 2. Chạy trên Web: Toàn bộ 100% tài nguyên game (bao gồm npc/, assets/map1_campus.jpg) đều tải qua Cloudflare R2 CDN
+            // 2. Những tài nguyên chưa có trên R2 (như thư mục npc/ và tệp map1_campus.jpg): tải trực tiếp từ máy chủ Vercel, tránh nghẽn lỗi 404
+            if (clean.startsWith('npc/') || clean === 'assets/map1_campus.jpg' || clean.startsWith('assets/game_zone')) {
+                return clean;
+            }
+
+            // 3. Toàn bộ tài nguyên còn lại: tải qua Cloudflare R2 CDN
             return `${window.R2_URL}/${clean}`;
         };
     </script>
@@ -1259,6 +1264,7 @@
     <script src="js/game.js?v=20261117_2"></script>
     <script src="js/rose_garden.js?v=20261117_2"></script>
     <script src="js/game_zone.js?v=20261117_2"></script>
+    <script src="js/classroom.js?v=20261119_1"></script>
 
     <script>
         // ========================================================
@@ -1505,6 +1511,15 @@
                                     window.gameInstance.render();
                                 }
                             } catch (e) {}
+
+                            // BẮT ĐẦU NẠP NGẦM (BACKGROUND LAZY LOADING):
+                            // Sau khi người chơi đã vào game mượt mà, âm thầm nạp các trang phục, cánh, pet trong nền
+                            setTimeout(() => {
+                                if (window.bodySQLDB && window.bodySQLDB.preloadTextures) window.bodySQLDB.preloadTextures();
+                                if (window.headSQLDB && window.headSQLDB.preloadTextures) window.headSQLDB.preloadTextures();
+                                if (window.wingSQLDB && window.wingSQLDB.preloadTextures) window.wingSQLDB.preloadTextures();
+                                if (window.petSQLDB && window.petSQLDB.preloadTextures) window.petSQLDB.preloadTextures();
+                            }, 1500);
                         }, 550);
                     }
                 }, 300);

@@ -19,7 +19,7 @@ class WingSQLDatabase {
 
         // Khởi tạo và nạp dữ liệu SQL Schema
         this.seedDatabase();
-        this.preloadTextures();
+        // Không preload ồ ạt trong constructor để ưu tiên nạp nhanh bản đồ và skin khởi đầu
     }
 
     seedDatabase() {

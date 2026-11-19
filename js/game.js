@@ -708,6 +708,8 @@ class GameEngine {
             this.drawMap3_Arcade(ctx);
         } else if (currentMapId === 'map4_gift') {
             this.drawMap4_Gift(ctx);
+        } else if (currentMapId === 'map5_classroom') {
+            this.drawMap5_Classroom(ctx);
         }
 
         // Portals & Biển chỉ đường
@@ -4240,6 +4242,15 @@ class GameEngine {
         ctx.fillRect(380, 340, 130, 90);
         ctx.fillStyle = '#264653';
         ctx.fillRect(780, 320, 150, 120);
+    }
+    drawMap5_Classroom(ctx) {
+        if (window.classroomManager) {
+            window.classroomManager.render(ctx, this.player);
+        } else {
+            const m = window.MAPS_DATA.map5_classroom;
+            ctx.fillStyle = '#fef3c7';
+            ctx.fillRect(0, 0, m.width, m.height);
+        }
     }
 }
 

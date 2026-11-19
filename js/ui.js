@@ -1223,6 +1223,11 @@ class UIManager {
                     const res = window.useGameStore.addAffection(35);
                     if (window.soundSystem) window.soundSystem.playAffectionGain();
 
+                    // Nếu là Cô Giáo Lớp Học Map 5 -> Đổi Frame Rạng Rỡ ôm hoa
+                    if ((npc.role === 'teacher_classroom' || npc.id === 'teacher_classroom_mai_hoa') && window.classroomManager) {
+                        window.classroomManager.setTeacherGiftReceived(true);
+                    }
+
                     this.showToast(`💖 Kính tặng Thầy/Cô thành công! Điểm thiện cảm: ${res.current}/100!`, 'success');
                     if (res.current >= 100) {
                         window.useGameStore.unlockAllOutfits();
@@ -1233,6 +1238,64 @@ class UIManager {
                 }
             };
             actionsEl.appendChild(giftBtn);
+
+            // Nút 1b: Tặng Đóa Hoa Hồng Đỏ trực tiếp từ Balo (+15 Thiện Cảm)
+            if (window.useGameStore.hasItem('hoa_hong_do', 1)) {
+                const redRoseBtn = document.createElement('button');
+                redRoseBtn.className = 'btn-dialogue-card btn-dialogue-rose';
+                redRoseBtn.innerHTML = `
+                    <span class="flex items-center gap-2 text-left">
+                        <img src="assets/rose_garden/icons/flower_pink.png" class="w-5 h-5 object-contain inline-block shrink-0" alt="Hoa đỏ" onerror="this.outerHTML='🌹'"/>
+                        <span>Kính tặng Thầy/Cô Đóa Hoa Hồng Đỏ (Từ Balo)</span>
+                    </span>
+                    <span class="dialogue-reward-badge rose">+15 Thiện Cảm 🌹</span>
+                `;
+                redRoseBtn.onclick = () => {
+                    window.useGameStore.removeItem('hoa_hong_do', 1);
+                    const res = window.useGameStore.addAffection(15);
+                    if (window.soundSystem) window.soundSystem.playAffectionGain();
+
+                    if ((npc.role === 'teacher_classroom' || npc.id === 'teacher_classroom_mai_hoa') && window.classroomManager) {
+                        window.classroomManager.setTeacherGiftReceived(true);
+                    }
+
+                    this.showToast(`🌹 Kính tặng Đóa Hoa Hồng Đỏ thành công! Điểm thiện cảm: ${res.current}/100!`, 'success');
+                    if (res.current >= 100) {
+                        window.useGameStore.unlockAllOutfits();
+                    }
+                    this.closeAllModals();
+                };
+                actionsEl.appendChild(redRoseBtn);
+            }
+
+            // Nút 1c: Tặng Đóa Hoa Hồng Trắng Quý Hiếm (+25 Thiện Cảm)
+            if (window.useGameStore.hasItem('hoa_hong_trang', 1)) {
+                const whiteRoseBtn = document.createElement('button');
+                whiteRoseBtn.className = 'btn-dialogue-card btn-dialogue-rose';
+                whiteRoseBtn.innerHTML = `
+                    <span class="flex items-center gap-2 text-left">
+                        <img src="assets/rose_garden/icons/flower_white.png" class="w-5 h-5 object-contain inline-block shrink-0" alt="Hoa trắng" onerror="this.outerHTML='🤍'"/>
+                        <span>Kính tặng Thầy/Cô Hoa Hồng Trắng Quý Hiếm (Từ Balo)</span>
+                    </span>
+                    <span class="dialogue-reward-badge rose">+25 Thiện Cảm 🤍</span>
+                `;
+                whiteRoseBtn.onclick = () => {
+                    window.useGameStore.removeItem('hoa_hong_trang', 1);
+                    const res = window.useGameStore.addAffection(25);
+                    if (window.soundSystem) window.soundSystem.playAffectionGain();
+
+                    if ((npc.role === 'teacher_classroom' || npc.id === 'teacher_classroom_mai_hoa') && window.classroomManager) {
+                        window.classroomManager.setTeacherGiftReceived(true);
+                    }
+
+                    this.showToast(`🤍 Kính tặng Hoa Hồng Trắng Quý Hiếm thành công! Điểm thiện cảm: ${res.current}/100!`, 'success');
+                    if (res.current >= 100) {
+                        window.useGameStore.unlockAllOutfits();
+                    }
+                    this.closeAllModals();
+                };
+                actionsEl.appendChild(whiteRoseBtn);
+            }
 
             // Nút 2: Tặng Hộp Quà Lễ Hội May Mắn (+25 Thiện Cảm) nếu có
             if (window.useGameStore.hasItem('hop_qua_tet', 1)) {

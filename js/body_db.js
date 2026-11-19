@@ -41,7 +41,8 @@ class BodySQLDatabase {
 
         // Khởi tạo và nạp dữ liệu SQL Schema
         this.seedDatabase();
-        this.preloadTextures();
+        // Không preload ồ ạt trong constructor để tránh nghẽn băng thông lúc mở web.
+        // TNUPreloader sẽ tải các skin khởi đầu, và gọi preloadTextures() ngầm sau khi vào game.
     }
 
     resolveOutfitId(id) {
