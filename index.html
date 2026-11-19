@@ -66,12 +66,7 @@
                 return clean;
             }
 
-            // 2. Những tài nguyên chưa có trên R2 (như thư mục npc/ và tệp map1_campus.jpg): tải trực tiếp từ máy chủ Vercel
-            if (clean.startsWith('npc/') || clean === 'assets/map1_campus.jpg') {
-                return clean;
-            }
-
-            // 3. Toàn bộ tài nguyên còn lại: tải qua Cloudflare R2 CDN
+            // 2. Chạy trên Web: Toàn bộ 100% tài nguyên game (bao gồm npc/, assets/map1_campus.jpg) đều tải qua Cloudflare R2 CDN
             return `${window.R2_URL}/${clean}`;
         };
     </script>

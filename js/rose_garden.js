@@ -1121,39 +1121,7 @@
 
             ctx.save();
             try {
-                // 1. Quầy Rạp Hạt Giống (Mái sọc đỏ) - che khi người chơi đứng sau quầy
-                if (player.y < 315 && player.x > 750 && player.x < 1000) {
-                    const fgSeed = this.assetManager.getImage('fg_seed_stall');
-                    if (fgSeed) {
-                        ctx.drawImage(fgSeed, 760, 240);
-                    }
-                }
-
-                // 2. Quầy Rạp Bình Tưới (Mái sọc xanh) - che khi người chơi đứng sau kệ
-                if (player.y < 415 && player.x > 980 && player.x < 1240) {
-                    const fgTool = this.assetManager.getImage('fg_tool_stall');
-                    if (fgTool) {
-                        ctx.drawImage(fgTool, 990, 320);
-                    }
-                }
-
-                // 3. Máng nước & thùng gỗ
-                if (player.y < 535 && player.x > 1110) {
-                    const fgTrough = this.assetManager.getImage('fg_trough');
-                    if (fgTrough) {
-                        ctx.drawImage(fgTrough, 1110, 480);
-                    }
-                }
-
-                // 4. Xe rùa chở đất
-                if (player.y < 535 && player.x > 430 && player.x < 570) {
-                    const fgWheel = this.assetManager.getImage('fg_wheelbarrow');
-                    if (fgWheel) {
-                        ctx.drawImage(fgWheel, 430, 490);
-                    }
-                }
-
-                // 5. BONG BÓNG GỢI Ý TƯƠNG TÁC TẠI CÁC CÔNG TRÌNH
+                // 1. BONG BÓNG GỢI Ý TƯƠNG TÁC TẠI CÁC CÔNG TRÌNH
                 const pSeedDist = Math.hypot(player.x - this.seedStallPos.x, player.y - this.seedStallPos.y);
                 if (pSeedDist < 78) {
                     this.drawSpeechPrompt(ctx, this.seedStallPos.x, this.seedStallPos.y - 70, this.seedStallPos.label, '#fef3c7', '#b45309', '#78350f');
