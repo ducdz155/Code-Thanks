@@ -186,7 +186,7 @@
         init() {
             // 1. Tải ảnh nền Lớp học
             this.bgImage = new Image();
-            this.bgImage.src = 'assets/classroom/classroom_bg.png';
+            this.bgImage.src = 'assets/classroom/classroom_bg.png?v=20261119_3';
             this.bgImage.onload = () => { this.bgLoaded = true; };
 
             // 2. Tải 2 Frame Cô Giáo

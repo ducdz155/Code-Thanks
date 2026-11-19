@@ -28,9 +28,15 @@
             this.worldY = 2985;
             this.worldRadius = 75;
 
-            // Ảnh bìa để vẽ cuốn sách trong thế giới game
+            // Ảnh bìa siêu nhẹ để vẽ cuốn sách trong thế giới game (load tức thì < 10ms)
             this.coverImg = new Image();
-            this.coverImg.src = 'assets/book_cover.png';
+            this.coverImg.src = 'assets/book/book_world_icon.png';
+
+            // Tiền tải ngầm toàn bộ 4 trang sách chất lượng cao vào bộ nhớ đệm
+            ['assets/book_cover.png?v=20261119_3', 'assets/page_1.png?v=20261119_3', 'assets/page_2.png?v=20261119_3', 'assets/page_3.png?v=20261119_3'].forEach(src => {
+                const preImg = new Image();
+                preImg.src = src;
+            });
 
             // Trạng thái nhận quà tri ân
             const savedGift = localStorage.getItem('tnu_tribute_book_gift_claimed');
@@ -276,11 +282,11 @@
         }
 
         getPageBg(pageIdx) {
-            if (pageIdx === 0) return 'assets/book_cover.png';
-            if (pageIdx === 1) return 'assets/page_1.png';
-            if (pageIdx === 2) return 'assets/page_2.png';
-            if (pageIdx === 3) return 'assets/page_3.png';
-            return 'assets/page_1.png';
+            if (pageIdx === 0) return 'assets/book_cover.png?v=20261119_3';
+            if (pageIdx === 1) return 'assets/page_1.png?v=20261119_3';
+            if (pageIdx === 2) return 'assets/page_2.png?v=20261119_3';
+            if (pageIdx === 3) return 'assets/page_3.png?v=20261119_3';
+            return 'assets/page_1.png?v=20261119_3';
         }
 
         /**
@@ -448,7 +454,7 @@
             // TRANG 0: BÌA SÁCH (COVER - assets/book_cover.png)
             // ==========================================
             if (this.currentPage === 0) {
-                wrap.style.backgroundImage = 'url("assets/book_cover.png")';
+                wrap.style.backgroundImage = 'url("assets/book_cover.png?v=20261119_3")';
                 wrap.style.aspectRatio = '764 / 1024';
                 wrap.style.maxWidth = '520px';
                 if (spineEl) spineEl.style.display = 'none';
@@ -500,7 +506,7 @@
             // TRANG 1: HÀNH TRÌNH TRI THỨC (assets/page_1.png)
             // ==========================================
             if (this.currentPage === 1) {
-                wrap.style.backgroundImage = 'url("assets/page_1.png")';
+                wrap.style.backgroundImage = 'url("assets/page_1.png?v=20261119_3")';
 
                 contentEl.innerHTML = `
                     <div class="w-full h-full relative z-20">
@@ -553,7 +559,7 @@
             // KHÔNG DÙNG HỘP BẢNG MÀU TRẮNG/BE - CHỮ ĐẶT VỪA KHÍT TRÊN NỀN
             // ========================================================
             if (this.currentPage === 2) {
-                wrap.style.backgroundImage = 'url("assets/page_2.png")';
+                wrap.style.backgroundImage = 'url("assets/page_2.png?v=20261119_3")';
 
                 contentEl.innerHTML = `
                     <div class="w-full h-full relative z-20 select-none">
@@ -603,7 +609,7 @@
             // LỒNG ẢNH THẬT 20/11, CHỮ PHẤN BẢNG VÀ TÂM TƯ TRONG VÙNG SÁNG
             // ========================================================
             if (this.currentPage === 3) {
-                wrap.style.backgroundImage = 'url("assets/page_3.png")';
+                wrap.style.backgroundImage = 'url("assets/page_3.png?v=20261119_3")';
 
                 contentEl.innerHTML = `
                     <div class="w-full h-full relative z-20 select-none">
